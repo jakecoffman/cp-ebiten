@@ -30,8 +30,6 @@ func main() {
 	// Generally you will never need to do this.
 	space.UseSpatialHash(2.0, 10000)
 
-	bodyCount = 0
-
 	var body *cp.Body
 	var shape *cp.Shape
 
@@ -47,8 +45,6 @@ func main() {
 			shape = makeBall(2.0*(float64(x)+imageWidth/2+xJitter)-75, 2*(imageHeight/2.0+float64(y)+yJitter)+150)
 			space.AddBody(shape.Body())
 			space.AddShape(shape)
-
-			bodyCount++
 		}
 	}
 
@@ -60,8 +56,6 @@ func main() {
 	shape.SetElasticity(0)
 	shape.SetFriction(0)
 
-	bodyCount++
-
 	err := ebiten.Run(update, 600, 480, 1, "Ebiten")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -71,8 +65,6 @@ func main() {
 func getPixel(x, y uint) int {
 	return (imageBitmap[(x>>3)+y*imageRowLength] >> (^x & 0x7)) & 1
 }
-
-var bodyCount = 0
 
 func update(screen *ebiten.Image) error {
 	space.Step(1. / 60.)
