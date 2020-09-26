@@ -47,25 +47,10 @@ func NewGame() *Game {
 	c := cp.Vector{200, 200}
 	d := cp.Vector{200, -200}
 
-	shape := space.AddShape(cp.NewSegment(container, a, b, 1))
-	shape.SetElasticity(1)
-	shape.SetFriction(1)
-	shape.SetFilter(NotGrabbable)
-
-	shape = space.AddShape(cp.NewSegment(container, b, c, 1))
-	shape.SetElasticity(1)
-	shape.SetFriction(1)
-	shape.SetFilter(NotGrabbable)
-
-	shape = space.AddShape(cp.NewSegment(container, c, d, 1))
-	shape.SetElasticity(1)
-	shape.SetFriction(1)
-	shape.SetFilter(NotGrabbable)
-
-	shape = space.AddShape(cp.NewSegment(container, d, a, 1))
-	shape.SetElasticity(1)
-	shape.SetFriction(1)
-	shape.SetFilter(NotGrabbable)
+	addWall(space, container, a, b)
+	addWall(space, container, b, c)
+	addWall(space, container, c, d)
+	addWall(space, container, d, a)
 
 	mass := 1.0
 	width := 30.0
@@ -138,69 +123,29 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.ColorM.Scale(200.0/255.0, 200.0/255.0, 200.0/255.0, 1)
 
-	dc := gg.NewContext(screenWidth, screenHeight)
-
 	g.space.EachShape(func(shape *cp.Shape) {
-		op.GeoM.Reset()
-		switch shape.Class.(type) {
-		case *cp.Circle:
-			circle := shape.Class.(*cp.Circle)
-
-			center := circle.TransformC()
-			dc.DrawCircle(center.X, center.Y, circle.Radius())
-			dc.SetColor(ColorForShape(shape))
-			dc.Fill()
-		case *cp.Segment:
-			seg := shape.Class.(*cp.Segment)
-
-			if seg.Radius() <= 1 {
-				a, b := seg.TransformA(), seg.TransformB()
-				dc.DrawLine(a.X, a.Y, b.X, b.Y)
-				dc.SetRGB(1, 1, 1)
-				dc.Stroke()
-				return
-			}
-
-			a, b := seg.A(), seg.B()
-			r := seg.Radius()
-			h := b.Distance(a) + r*2
-			w := r * 2
-
-			pos := seg.Body().Position()
-			dc.RotateAbout(seg.Body().Angle(), pos.X, pos.Y)
-			dc.DrawRoundedRectangle(pos.X-w/2, pos.Y-h/2, w, h, r)
-			dc.SetColor(ColorForShape(shape))
-			dc.Fill()
-			dc.Identity()
-		case *cp.PolyShape:
-			poly := shape.Class.(*cp.PolyShape)
-			n := poly.Count()
-
-			startVert := poly.TransformVert(0)
-			endVert := poly.TransformVert(n - 1)
-
-			dc.NewSubPath()
-			dc.MoveTo(startVert.X, startVert.Y)
-			for i := 1; i < n-1; i++ {
-				vert := poly.TransformVert(i)
-				dc.LineTo(vert.X, vert.Y)
-			}
-			dc.LineTo(endVert.X, endVert.Y)
-			dc.ClosePath()
-			dc.SetColor(ColorForShape(shape))
-			dc.Fill()
-			dc.MoveTo(0, 0)
-		}
+		draw := shape.UserData.(func(*ebiten.Image, *ebiten.DrawImageOptions))
+		draw(screen, op)
 	})
-
-	eimg, _ := ebiten.NewImageFromImage(dc.Image(), ebiten.FilterDefault)
-	_ = screen.DrawImage(eimg, op)
 
 	_ = ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f", ebiten.CurrentTPS()))
 }
 
 func (g *Game) Layout(int, int) (int, int) {
 	return screenWidth, screenHeight
+}
+
+func addWall(space *cp.Space, container *cp.Body, a, b cp.Vector) {
+	seg := cp.NewSegment(container, a, b, 1).Class.(*cp.Segment)
+	shape := space.AddShape(seg.Shape)
+	shape.SetElasticity(1)
+	shape.SetFriction(1)
+	shape.SetFilter(NotGrabbable)
+
+	shape.UserData = func(screen *ebiten.Image, op *ebiten.DrawImageOptions) {
+		a, b := seg.TransformA(), seg.TransformB()
+		ebitenutil.DrawLine(screen, a.X, a.Y, b.X, b.Y, color.White)
+	}
 }
 
 func addBox(space *cp.Space, pos cp.Vector, mass, width, height float64) *cp.Shape {
@@ -210,19 +155,61 @@ func addBox(space *cp.Space, pos cp.Vector, mass, width, height float64) *cp.Sha
 	shape := space.AddShape(cp.NewBox(body, width, height, 0))
 	shape.SetElasticity(0)
 	shape.SetFriction(0.7)
+
+	dc := gg.NewContext(int(width), int(height))
+	dc.DrawRectangle(0, 0, width, height)
+	dc.SetColor(ColorForShape(shape))
+	dc.Fill()
+	img, _ := ebiten.NewImageFromImage(dc.Image(), ebiten.FilterDefault)
+
+	shape.UserData = func(screen *ebiten.Image, op *ebiten.DrawImageOptions) {
+		op.GeoM.Translate(-width/2, -height/2)
+		op.GeoM.Rotate(body.Angle())
+		pos := body.Position()
+		op.GeoM.Translate(pos.X, pos.Y)
+		_ = screen.DrawImage(img, op)
+		op.GeoM.Reset()
+	}
+
 	return shape
+}
+
+type segmentInfo struct {
+	width, height float64
+	img           *ebiten.Image
 }
 
 func addSegment(space *cp.Space, pos cp.Vector, mass, width, height float64) *cp.Shape {
 	body := space.AddBody(cp.NewBody(mass, cp.MomentForBox(mass, width, height)))
 	body.SetPosition(pos)
 
-	shape := space.AddShape(cp.NewSegment(body,
+	seg := cp.NewSegment(body,
 		cp.Vector{0, (height - width) / 2.0},
 		cp.Vector{0, (width - height) / 2.0},
-		width/2.0))
+		width/2.0).Class.(*cp.Segment)
+	shape := space.AddShape(seg.Shape)
 	shape.SetElasticity(0)
 	shape.SetFriction(0.7)
+
+	a, b := seg.A(), seg.B()
+	r := seg.Radius()
+	h := b.Distance(a) + r*2
+	w := r * 2
+
+	dc := gg.NewContext(int(width), int(height))
+	dc.DrawRoundedRectangle(0, 0, w, h, r)
+	dc.SetColor(ColorForShape(shape))
+	dc.Fill()
+	img, _ := ebiten.NewImageFromImage(dc.Image(), ebiten.FilterDefault)
+
+	shape.UserData = func(screen *ebiten.Image, op *ebiten.DrawImageOptions) {
+		op.GeoM.Translate(-width/2, -height/2)
+		op.GeoM.Rotate(seg.Body().Angle())
+		pos := seg.Body().Position()
+		op.GeoM.Translate(pos.X, pos.Y)
+		_ = screen.DrawImage(img, op)
+		op.GeoM.Reset()
+	}
 	return shape
 }
 
@@ -230,9 +217,25 @@ func addCircle(space *cp.Space, pos cp.Vector, mass, radius float64) *cp.Shape {
 	body := space.AddBody(cp.NewBody(mass, cp.MomentForCircle(mass, 0, radius, cp.Vector{})))
 	body.SetPosition(pos)
 
-	shape := space.AddShape(cp.NewCircle(body, radius, cp.Vector{}))
+	circle := cp.NewCircle(body, radius, cp.Vector{}).Class.(*cp.Circle)
+	shape := space.AddShape(circle.Shape)
 	shape.SetElasticity(0)
 	shape.SetFriction(0.7)
+
+	dc := gg.NewContext(int(circle.Radius()*2), int(circle.Radius()*2))
+	dc.DrawCircle(circle.Radius(), circle.Radius(), circle.Radius())
+	dc.SetColor(ColorForShape(shape))
+	dc.Fill()
+	img, _ := ebiten.NewImageFromImage(dc.Image(), ebiten.FilterDefault)
+	shape.UserData = func(screen *ebiten.Image, op *ebiten.DrawImageOptions) {
+		op.GeoM.Translate(-circle.Radius(), -circle.Radius())
+		op.GeoM.Rotate(body.Angle())
+		center := circle.TransformC()
+		op.GeoM.Translate(center.X, center.Y)
+		_ = screen.DrawImage(img, op)
+		op.GeoM.Reset()
+	}
+
 	return shape
 }
 
