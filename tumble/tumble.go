@@ -118,22 +118,28 @@ func (g *Game) Update(*ebiten.Image) error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		g.mouseJoint = g.handleGrab(mouse, g.mouseBody)
 	}
-	for _, id := range ebiten.TouchIDs() {
+	for _, id := range inpututil.JustPressedTouchIDs() {
 		x, y := ebiten.TouchPosition(id)
 		touchPos := cp.Vector{float64(x), float64(y)}
 
-		touch, ok := g.touches[id]
-		if !ok {
-			body := cp.NewKinematicBody()
-			body.SetPosition(touchPos)
-			touch = &touchInfo{
-				id:    id,
-				body:  body,
-				joint: g.handleGrab(touchPos, body),
-			}
-			g.touches[id] = touch
+		body := cp.NewKinematicBody()
+		body.SetPosition(touchPos)
+		touch := &touchInfo{
+			id:    id,
+			body:  body,
+			joint: g.handleGrab(touchPos, body),
+		}
+		g.touches[id] = touch
+	}
+	for id, touch := range g.touches {
+		if touch.joint != nil && inpututil.IsTouchJustReleased(id) {
+			g.space.RemoveConstraint(touch.joint)
+			touch.joint = nil
+			delete(g.touches, id)
 		} else {
-			// lerp the touch body around which drags any shapes attached with a joint
+			x, y := ebiten.TouchPosition(id)
+			touchPos := cp.Vector{float64(x), float64(y)}
+			// calculate velocity so the object goes as fast as the touch moved
 			newPoint := touch.body.Position().Lerp(touchPos, 0.25)
 			touch.body.SetVelocityVector(newPoint.Sub(touch.body.Position()).Mult(60.0))
 			touch.body.SetPosition(newPoint)
@@ -143,15 +149,8 @@ func (g *Game) Update(*ebiten.Image) error {
 		g.space.RemoveConstraint(g.mouseJoint)
 		g.mouseJoint = nil
 	}
-	for id, touch := range g.touches {
-		if touch.joint != nil && inpututil.IsTouchJustReleased(id) {
-			g.space.RemoveConstraint(touch.joint)
-			touch.joint = nil
-			delete(g.touches, id)
-		}
-	}
 
-	// lerp the mouse body around which drags any shapes attached with a joint
+	// calculate velocity so the object goes as fast as the mouse moved
 	newPoint := g.mouseBody.Position().Lerp(mouse, 0.25)
 	g.mouseBody.SetVelocityVector(newPoint.Sub(g.mouseBody.Position()).Mult(60.0))
 	g.mouseBody.SetPosition(newPoint)
