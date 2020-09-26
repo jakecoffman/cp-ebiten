@@ -170,7 +170,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		draw(screen, op)
 	})
 
-	_ = ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f", ebiten.CurrentTPS()))
+	_ = ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f FPS: %0.2f", ebiten.CurrentTPS(), ebiten.CurrentFPS()))
 }
 
 func (g *Game) Layout(int, int) (int, int) {
@@ -328,6 +328,8 @@ func ColorForShape(shape *cp.Shape) color.Color {
 }
 
 func main() {
+	ebiten.SetVsyncEnabled(false)
+
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Ebiten")
 	if err := ebiten.RunGame(NewGame()); err != nil {
