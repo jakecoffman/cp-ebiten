@@ -23,6 +23,13 @@ type Game struct {
 
 	mouseBody  *cp.Body
 	mouseJoint *cp.Constraint
+	touches    map[int]*touchInfo
+}
+
+type touchInfo struct {
+	id    int
+	body  *cp.Body
+	joint *cp.Constraint
 }
 
 var GrabbableMaskBit uint = 1 << 31
@@ -75,7 +82,33 @@ func NewGame() *Game {
 	return &Game{
 		space:     space,
 		mouseBody: cp.NewKinematicBody(),
+		touches:   map[int]*touchInfo{},
 	}
+}
+
+func (g *Game) handleGrab(pos cp.Vector, touchBody *cp.Body) *cp.Constraint {
+	const radius = 5.0 // make it easier to grab stuff
+	info := g.space.PointQueryNearest(pos, radius, Grabbable)
+
+	// avoid infinite mass objects
+	if info.Shape != nil && info.Shape.Body().Mass() < math.MaxFloat64 {
+		var nearest cp.Vector
+		if info.Distance > 0 {
+			nearest = info.Point
+		} else {
+			nearest = pos
+		}
+
+		// create a joint between the invisible mouse body and the shape
+		body := info.Shape.Body()
+		joint := cp.NewPivotJoint2(touchBody, body, cp.Vector{}, body.WorldToLocal(nearest))
+		joint.SetMaxForce(50000)
+		joint.SetErrorBias(math.Pow(1.0-0.15, 60.0))
+		g.space.AddConstraint(joint)
+		return joint
+	}
+
+	return nil
 }
 
 func (g *Game) Update(*ebiten.Image) error {
@@ -83,29 +116,39 @@ func (g *Game) Update(*ebiten.Image) error {
 	mouse := cp.Vector{float64(x), float64(y)}
 
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		const radius = 5.0 // make it easier to grab stuff
-		info := g.space.PointQueryNearest(mouse, radius, Grabbable)
+		g.mouseJoint = g.handleGrab(mouse, g.mouseBody)
+	}
+	for _, id := range ebiten.TouchIDs() {
+		x, y := ebiten.TouchPosition(id)
+		touchPos := cp.Vector{float64(x), float64(y)}
 
-		// avoid infinite mass objects
-		if info.Shape != nil && info.Shape.Body().Mass() < math.MaxFloat64 {
-			var nearest cp.Vector
-			if info.Distance > 0 {
-				nearest = info.Point
-			} else {
-				nearest = mouse
+		touch, ok := g.touches[id]
+		if !ok {
+			body := cp.NewKinematicBody()
+			body.SetPosition(touchPos)
+			touch = &touchInfo{
+				id:    id,
+				body:  body,
+				joint: g.handleGrab(touchPos, body),
 			}
-
-			// create a joint between the invisible mouse body and the shape
-			body := info.Shape.Body()
-			g.mouseJoint = cp.NewPivotJoint2(g.mouseBody, body, cp.Vector{}, body.WorldToLocal(nearest))
-			g.mouseJoint.SetMaxForce(50000)
-			g.mouseJoint.SetErrorBias(math.Pow(1.0-0.15, 60.0))
-			g.space.AddConstraint(g.mouseJoint)
+			g.touches[id] = touch
+		} else {
+			// lerp the touch body around which drags any shapes attached with a joint
+			newPoint := touch.body.Position().Lerp(touchPos, 0.25)
+			touch.body.SetVelocityVector(newPoint.Sub(touch.body.Position()).Mult(60.0))
+			touch.body.SetPosition(newPoint)
 		}
 	}
 	if g.mouseJoint != nil && inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 		g.space.RemoveConstraint(g.mouseJoint)
 		g.mouseJoint = nil
+	}
+	for id, touch := range g.touches {
+		if touch.joint != nil && inpututil.IsTouchJustReleased(id) {
+			g.space.RemoveConstraint(touch.joint)
+			touch.joint = nil
+			delete(g.touches, id)
+		}
 	}
 
 	// lerp the mouse body around which drags any shapes attached with a joint
@@ -172,11 +215,6 @@ func addBox(space *cp.Space, pos cp.Vector, mass, width, height float64) *cp.Sha
 	}
 
 	return shape
-}
-
-type segmentInfo struct {
-	width, height float64
-	img           *ebiten.Image
 }
 
 func addSegment(space *cp.Space, pos cp.Vector, mass, width, height float64) *cp.Shape {
