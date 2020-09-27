@@ -90,7 +90,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// Highlight and count the number of shapes the ball is touching.
 	var count int
 	g.ball.EachArbiter(func(arb *cp.Arbiter) {
-		// TODO
 		_, other := arb.Shapes()
 		cpebiten.DrawBB(screen, other.BB())
 		count++

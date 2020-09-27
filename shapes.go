@@ -27,7 +27,7 @@ func AddWall(space *cp.Space, body *cp.Body, a, b cp.Vector, radius float64) *cp
 	img, _ := ebiten.NewImageFromImage(dc.Image(), ebiten.FilterDefault)
 
 	center := cp.Vector{(a.X + b.X)/2, (a.Y+b.Y)/2}
-	offset := body.Position().Sub(center)
+	offset := body.Position().Sub(center).Neg()
 
 	maxY := math.Max(a.Y, b.Y)
 	minY := math.Min(a.Y, b.Y)
@@ -39,7 +39,7 @@ func AddWall(space *cp.Space, body *cp.Body, a, b cp.Vector, radius float64) *cp
 		op.GeoM.Translate(offset.X, offset.Y)
 
 		pos := seg.Body().Position()
-		op.GeoM.Translate(-pos.X, -pos.Y)
+		op.GeoM.Translate(pos.X, pos.Y)
 		op.GeoM.Rotate(seg.Body().Angle())
 		op.GeoM.Translate(pos.X, pos.Y)
 
