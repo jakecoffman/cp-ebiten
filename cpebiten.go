@@ -68,9 +68,6 @@ func getPixel(x, y uint) int {
 
 func update(screen *ebiten.Image) error {
 	space.Step(1. / 60.)
-	if ebiten.IsRunningSlowly() {
-		return nil
-	}
 
 	screen.Fill(color.Black)
 	dot, _ := ebiten.NewImage(1, 1, ebiten.FilterNearest)
