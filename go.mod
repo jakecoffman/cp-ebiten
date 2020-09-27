@@ -13,4 +13,4 @@ require (
 	golang.org/x/sys v0.0.0-20200926100807-9d91bd62050c // indirect
 )
 
-replace github.com/hajimehoshi/ebiten => /Users/coffmanj/personal/ebiten
+replace github.com/hajimehoshi/ebiten => github.com/jakecoffman/ebiten v1.13.0-alpha.0.20200926172331-1d10970a8c48
