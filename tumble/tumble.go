@@ -26,7 +26,7 @@ func NewGame() *Game {
 
 	container := space.AddBody(cp.NewKinematicBody())
 	container.SetAngularVelocity(0.4)
-	container.SetPosition(cp.Vector{screenWidth/2, screenHeight/2})
+	container.SetPosition(cp.Vector{screenWidth / 2, screenHeight / 2})
 
 	a := cp.Vector{-200, -200}
 	b := cp.Vector{-200, 200}
@@ -91,7 +91,7 @@ func main() {
 	ebiten.SetVsyncEnabled(false)
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Ebiten")
+	ebiten.SetWindowTitle("Tumble")
 	if err := ebiten.RunGame(NewGame()); err != nil {
 		log.Fatal(err)
 	}

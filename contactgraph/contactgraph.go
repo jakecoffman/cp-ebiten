@@ -51,13 +51,13 @@ func NewGame() *Game {
 	return &Game{
 		space: space,
 		scale: scale,
-		ball: ball,
+		ball:  ball,
 	}
 }
 
 func (g *Game) Update(*ebiten.Image) error {
 	cpebiten.UpdateInput(g.space)
-	g.space.Step(1.0/float64(ebiten.MaxTPS()))
+	g.space.Step(1.0 / float64(ebiten.MaxTPS()))
 	return nil
 }
 
@@ -126,7 +126,7 @@ func main() {
 	ebiten.SetVsyncEnabled(false)
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Ebiten")
+	ebiten.SetWindowTitle("Contact Graph")
 	if err := ebiten.RunGame(NewGame()); err != nil {
 		log.Fatal(err)
 	}

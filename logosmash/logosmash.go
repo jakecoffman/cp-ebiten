@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/jakecoffman/cpebiten"
 	"image/color"
+	"log"
 	"math/rand"
-	"os"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -12,17 +13,25 @@ import (
 )
 
 const (
-	imageWidth     = 188
-	imageHeight    = 35
-	imageRowLength = 24
+	screenWidth  = 600
+	screenHeight = 480
 )
 
-var (
+type Game struct {
 	space *cp.Space
-)
+	dot   *ebiten.Image
+}
 
-func main() {
-	space = cp.NewSpace()
+func NewGame() *Game {
+	const (
+		imageWidth  = 188
+		imageHeight = 35
+	)
+
+	dot, _ := ebiten.NewImage(1, 1, ebiten.FilterDefault)
+	_ = dot.Fill(color.White)
+
+	space := cp.NewSpace()
 	space.Iterations = 1
 
 	// The space will contain a very large number of similarly sized objects.
@@ -49,46 +58,53 @@ func main() {
 	}
 
 	body = space.AddBody(cp.NewBody(1e9, cp.INFINITY))
-	body.SetPosition(cp.Vector{-1000, 225})
+	body.SetPosition(cp.Vector{X: -1000, Y: 225})
 	body.SetVelocity(400, 0)
 
 	shape = space.AddShape(cp.NewCircle(body, 8, cp.Vector{}))
 	shape.SetElasticity(0)
 	shape.SetFriction(0)
 
-	err := ebiten.Run(update, 600, 480, 1, "Ebiten")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	return &Game{
+		space: space,
+		dot:   dot,
 	}
 }
 
-func getPixel(x, y uint) int {
-	return (imageBitmap[(x>>3)+y*imageRowLength] >> (^x & 0x7)) & 1
+func (g *Game) Update(*ebiten.Image) error {
+	cpebiten.UpdateInput(g.space)
+	g.space.Step(1.0 / float64(ebiten.MaxTPS()))
+	return nil
 }
 
-func update(screen *ebiten.Image) error {
-	space.Step(1. / 60.)
-
-	screen.Fill(color.Black)
-	dot, _ := ebiten.NewImage(1, 1, ebiten.FilterNearest)
-	dot.Fill(color.White)
+func (g *Game) Draw(screen *ebiten.Image) {
+	_ = screen.Fill(color.Black)
 
 	op := &ebiten.DrawImageOptions{}
-	op.ColorM.Scale(200./255., 200./255., 200./255., 1)
+	op.ColorM.Scale(200.0/255.0, 200.0/255.0, 200.0/255.0, 1)
 
-	space.EachBody(func(body *cp.Body) {
+	dot := g.dot
+	g.space.EachBody(func(body *cp.Body) {
 		op.GeoM.Reset()
 		op.GeoM.Translate(body.Position().X, body.Position().Y)
-		screen.DrawImage(dot, op)
+		_ = screen.DrawImage(dot, op)
 	})
 
-	ebitenutil.DebugPrint(screen, fmt.Sprint(ebiten.CurrentFPS()))
-	return nil
+	_ = ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f", ebiten.CurrentTPS()))
+}
+
+func (g *Game) Layout(int, int) (int, int) {
+	return screenWidth, screenHeight
+}
+
+func getPixel(x, y uint) int {
+	const imageRowLength = 24
+	return (imageBitmap[(x>>3)+y*imageRowLength] >> (^x & 0x7)) & 1
 }
 
 func makeBall(x, y float64) *cp.Shape {
 	body := cp.NewBody(1.0, cp.INFINITY)
-	body.SetPosition(cp.Vector{x, y})
+	body.SetPosition(cp.Vector{X: x, Y: y})
 
 	shape := cp.NewCircle(body, 0.95, cp.Vector{})
 	shape.SetElasticity(0)
@@ -131,4 +147,12 @@ var imageBitmap = []int{
 	-97, -25, -8, 0, 63, -61, -61, -4, 127, -1, -29, -4, 127, -64, 15, -8, 0, 0, 55, -1, -1, -121, -8,
 	127, -97, -25, -8, 0, 63, -61, -61, -4, 127, -1, -29, -4, 63, -64, 15, -32, 0, 0, 23, -1, -2, 3, -16,
 	63, 15, -61, -16, 0, 31, -127, -127, -8, 31, -1, -127, -8, 31, -128, 7, -128, 0, 0,
+}
+
+func main() {
+	ebiten.SetWindowSize(screenWidth, screenHeight)
+	ebiten.SetWindowTitle("Logosmash")
+	if err := ebiten.RunGame(NewGame()); err != nil {
+		log.Fatal(err)
+	}
 }
