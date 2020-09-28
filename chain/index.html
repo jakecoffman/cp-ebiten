@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<head>
+  <meta name="twitter:card" content="player" />
+  <meta name="twitter:site" content="@nill" />
+  <meta name="twitter:creator" content="@nill" />
+  <meta property="og:url" content="https://jakecoffman.com/cpebiten/tumble/" />
+  <meta property="og:title" content="Chipmunk2D Chain" />
+  <meta property="og:description" content="Chipmunk2D example ported to Go cross compiled to WASM hosted on GitHub embedded on Twitter." />
+  <meta property="og:image" content="https://jakecoffman.com/cpebiten/chain/preview.png" />
+  <meta name="twitter:player" content="https://jakecoffman.com/cpebiten/chain/" />
+  <meta name="twitter:player:width" content="600" />
+  <meta name="twitter:player:height" content="480" />
+</head>
+<body>
+<script src="../wasm_exec.js"></script>
+<script>
+  // Polyfill
+  if (!WebAssembly.instantiateStreaming) {
+    WebAssembly.instantiateStreaming = async (resp, importObject) => {
+      const source = await (await resp).arrayBuffer();
+      return await WebAssembly.instantiate(source, importObject);
+    };
+  }
+
+  const go = new Go();
+  WebAssembly.instantiateStreaming(fetch("chain.wasm"), go.importObject).then(result => {
+    go.run(result.instance);
+  });
+</script>
+</body>
