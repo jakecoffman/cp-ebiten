@@ -10,6 +10,11 @@ import (
 )
 
 func AddWall(space *cp.Space, body *cp.Body, a, b cp.Vector, radius float64) *cp.Shape {
+	// swap so we always draw the same direction horizontally
+	if a.X < b.X {
+		a, b = b, a
+	}
+
 	seg := cp.NewSegment(body, a, b, radius).Class.(*cp.Segment)
 	shape := space.AddShape(seg.Shape)
 	shape.SetElasticity(1)
@@ -34,7 +39,12 @@ func AddWall(space *cp.Space, body *cp.Body, a, b cp.Vector, radius float64) *cp
 
 	maxY := math.Max(a.Y, b.Y)
 	minY := math.Min(a.Y, b.Y)
-	rotation := math.Acos((maxY - minY)/math.Sqrt(math.Pow(a.X-b.X, 2)+math.Pow(a.Y-b.Y, 2)))
+	var rotation float64
+	if b.Y < a.Y {
+		rotation = math.Acos((minY - maxY) / math.Sqrt(math.Pow(a.X-b.X, 2)+math.Pow(minY-maxY, 2)))
+	} else {
+		rotation = math.Acos((maxY - minY) / math.Sqrt(math.Pow(a.X-b.X, 2)+math.Pow(maxY-minY, 2)))
+	}
 
 	shape.UserData = func(screen *ebiten.Image, op *ebiten.DrawImageOptions) {
 		op.GeoM.Translate(-w/2, -h/2)
