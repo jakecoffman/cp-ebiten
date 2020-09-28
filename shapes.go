@@ -17,6 +17,9 @@ func AddWall(space *cp.Space, body *cp.Body, a, b cp.Vector, radius float64) *cp
 	shape.SetFilter(NotGrabbable)
 
 	r := seg.Radius()
+	if r == 0 {
+		r = 1
+	}
 	h := b.Distance(a) + r*2
 	w := r * 2
 
@@ -27,7 +30,7 @@ func AddWall(space *cp.Space, body *cp.Body, a, b cp.Vector, radius float64) *cp
 	img, _ := ebiten.NewImageFromImage(dc.Image(), ebiten.FilterDefault)
 
 	center := cp.Vector{(a.X + b.X)/2, (a.Y+b.Y)/2}
-	offset := body.Position().Sub(center).Neg()
+	offset := center.Sub(body.Position())
 
 	maxY := math.Max(a.Y, b.Y)
 	minY := math.Min(a.Y, b.Y)
