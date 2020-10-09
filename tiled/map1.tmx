@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.4" tiledversion="1.4.2" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="10">
+ <tileset firstgid="1" source="interiors.tsx"/>
+ <tileset firstgid="41" source="carpets.tsx"/>
+ <tileset firstgid="185" source="furniture.tsx"/>
+ <layer id="1" name="tiles-1" width="10" height="10">
+  <data encoding="csv">
+1,2,31,2,2,14,2,32,2,3,
+9,41,42,42,43,9,10,186,10,11,
+9,49,50,50,51,9,10,10,10,11,
+9,57,58,58,59,12,10,10,10,11,
+9,10,5,18,18,19,10,10,10,11,
+9,10,10,10,10,10,10,10,10,11,
+9,10,10,10,10,10,10,10,10,11,
+9,10,10,10,10,10,10,10,10,11,
+9,10,10,10,10,10,10,10,10,11,
+17,18,18,18,18,18,18,18,18,19
+</data>
+ </layer>
+ <objectgroup id="3" name="static-collider">
+  <object id="1" x="32.75" y="64.75" width="62.75" height="15"/>
+  <object id="2" x="80" y="16.5671" width="15.5" height="47.4978"/>
+  <object id="4" x="0" y="0" width="160" height="16"/>
+  <object id="5" x="-0.25" y="16.4493" width="15.25" height="143.565"/>
+  <object id="6" x="0.492869" y="144.75" width="158.75" height="15"/>
+  <object id="7" x="144.5" y="16.6921" width="14.75" height="143.308"/>
+  <object id="8" x="112.25" y="16.1875" width="15.75" height="15.8125"/>
+ </objectgroup>
+</map>

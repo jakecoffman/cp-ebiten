@@ -116,6 +116,31 @@ func AddBox(space *cp.Space, pos cp.Vector, mass, width, height float64) *cp.Sha
 
 	return shape
 }
+func AddStaticBox(space *cp.Space, pos cp.Vector, width, height float64) *cp.Shape {
+	body := space.AddBody(cp.NewKinematicBody())
+	body.SetPosition(pos)
+
+	shape := space.AddShape(cp.NewBox(body, width, height, 0))
+	shape.SetElasticity(0)
+	shape.SetFriction(0.7)
+
+	dc := gg.NewContext(int(width), int(height))
+	dc.DrawRectangle(0, 0, width, height)
+	dc.SetColor(ColorForShape(shape))
+	dc.Fill()
+	img, _ := ebiten.NewImageFromImage(dc.Image(), ebiten.FilterDefault)
+
+	shape.UserData = func(screen *ebiten.Image, op *ebiten.DrawImageOptions) {
+		op.GeoM.Translate(-width/2, -height/2)
+		op.GeoM.Rotate(body.Angle())
+		pos := body.Position()
+		op.GeoM.Translate(pos.X, pos.Y)
+		_ = screen.DrawImage(img, op)
+		op.GeoM.Reset()
+	}
+
+	return shape
+}
 
 func AddCircle(space *cp.Space, pos cp.Vector, mass, radius float64) *cp.Shape {
 	body := space.AddBody(cp.NewBody(mass, cp.MomentForCircle(mass, 0, radius, cp.Vector{})))
