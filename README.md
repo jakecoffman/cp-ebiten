@@ -1,5 +1,5 @@
 # cpebiten
-example physics in ebiten using my chipmink port
+example physics in ebiten using my chipmunk port
 
 ## building
 
