@@ -1,8 +1,8 @@
 package cpebiten
 
 import (
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/inpututil"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/jakecoffman/cp"
 	"math"
 )
@@ -42,7 +42,7 @@ func handleGrab(space *cp.Space, pos cp.Vector, touchBody *cp.Body) *cp.Constrai
 }
 
 type touchInfo struct {
-	id    int
+	id    ebiten.TouchID
 	body  *cp.Body
 	joint *cp.Constraint
 }
@@ -50,7 +50,7 @@ type touchInfo struct {
 var (
 	mouseBody  = cp.NewKinematicBody()
 	mouseJoint *cp.Constraint
-	touches    = map[int]*touchInfo{}
+	touches    = map[ebiten.TouchID]*touchInfo{}
 )
 
 func UpdateInput(space *cp.Space) {

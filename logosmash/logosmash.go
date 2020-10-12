@@ -7,8 +7,8 @@ import (
 	"log"
 	"math/rand"
 
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/jakecoffman/cp"
 )
 
@@ -28,8 +28,8 @@ func NewGame() *Game {
 		imageHeight = 35
 	)
 
-	dot, _ := ebiten.NewImage(1, 1, ebiten.FilterDefault)
-	_ = dot.Fill(color.White)
+	dot := ebiten.NewImage(1, 1)
+	dot.Fill(color.White)
 
 	space := cp.NewSpace()
 	space.Iterations = 1
@@ -71,14 +71,14 @@ func NewGame() *Game {
 	}
 }
 
-func (g *Game) Update(*ebiten.Image) error {
+func (g *Game) Update() error {
 	cpebiten.UpdateInput(g.space)
 	g.space.Step(1.0 / float64(ebiten.MaxTPS()))
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	_ = screen.Fill(color.Black)
+	screen.Fill(color.Black)
 
 	op := &ebiten.DrawImageOptions{}
 	op.ColorM.Scale(200.0/255.0, 200.0/255.0, 200.0/255.0, 1)
@@ -87,10 +87,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.space.EachBody(func(body *cp.Body) {
 		op.GeoM.Reset()
 		op.GeoM.Translate(body.Position().X, body.Position().Y)
-		_ = screen.DrawImage(dot, op)
+		screen.DrawImage(dot, op)
 	})
 
-	_ = ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f", ebiten.CurrentTPS()))
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f", ebiten.CurrentTPS()))
 }
 
 func (g *Game) Layout(int, int) (int, int) {
