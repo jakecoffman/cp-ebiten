@@ -53,7 +53,14 @@ var (
 	touches    = map[int]*touchInfo{}
 )
 
+var vsync bool
+
 func UpdateInput(space *cp.Space) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyV) {
+		ebiten.SetVsyncEnabled(vsync)
+		vsync = !vsync
+	}
+
 	x, y := ebiten.CursorPosition()
 	mouse := cp.Vector{float64(x), float64(y)}
 

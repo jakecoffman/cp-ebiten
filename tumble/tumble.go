@@ -88,8 +88,6 @@ func (g *Game) Layout(int, int) (int, int) {
 }
 
 func main() {
-	ebiten.SetVsyncEnabled(false)
-
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Tumble")
 	if err := ebiten.RunGame(NewGame()); err != nil {
