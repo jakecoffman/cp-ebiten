@@ -19,6 +19,8 @@ github.com/hajimehoshi/oto v0.6.1/go.mod h1:0QXGEkbuJRohbJaxr7ZQSxnju7hEhseiPx2h
 github.com/hajimehoshi/oto v0.6.6-0.20201012021214-90150a1b9603/go.mod h1:0QXGEkbuJRohbJaxr7ZQSxnju7hEhseiPx2hrh6raOI=
 github.com/jakecoffman/cp v1.0.0 h1:4qi6RDQxnEgH2aonA5Wa67VYy9onrlzsIg0Uk7tlf0o=
 github.com/jakecoffman/cp v1.0.0/go.mod h1:JjY/Fp6d8E1CHnu74gWNnU0+b9VzEdUVPoJxg2PsTQg=
+github.com/jakecoffman/ebiten/v2 v2.0.0-rc.1.0.20201016235730-ac0f73be0e69 h1:yomfYdCuOzyQtoh0Ny+Gj4+LnZq6nJTV5bbSd0rZZG4=
+github.com/jakecoffman/ebiten/v2 v2.0.0-rc.1.0.20201016235730-ac0f73be0e69/go.mod h1:PGTOnJeFMv3Te9PhG8FSO4+ssFpz6XyO56aa9jBq16E=
 github.com/jfreymuth/oggvorbis v1.0.1/go.mod h1:NqS+K+UXKje0FUYUPosyQ+XTVvjmVjps1aEZH1sumIk=
 github.com/jfreymuth/vorbis v1.0.0/go.mod h1:8zy3lUAm9K/rJJk223RKy6vjCZTWC61NA2QD06bfOE0=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=

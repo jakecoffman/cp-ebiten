@@ -11,3 +11,5 @@ require (
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
 	golang.org/x/sys v0.0.0-20201016160150-f659759dc4ca // indirect
 )
+
+replace github.com/hajimehoshi/ebiten/v2 => github.com/jakecoffman/ebiten/v2 v2.0.0-rc.1.0.20201016235730-ac0f73be0e69
