@@ -12,4 +12,4 @@ require (
 	golang.org/x/sys v0.0.0-20201016160150-f659759dc4ca // indirect
 )
 
-replace github.com/hajimehoshi/ebiten/v2 => github.com/jakecoffman/ebiten/v2 v2.1.0-alpha.0.20201018160528-0018f37928ca
+replace github.com/hajimehoshi/ebiten/v2 => github.com/jakecoffman/ebiten/v2 v2.1.0-alpha.0.20201018205144-b91defe61448

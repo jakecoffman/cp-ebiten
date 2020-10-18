@@ -25,6 +25,8 @@ github.com/jakecoffman/ebiten/v2 v2.1.0-alpha.0.20201017114317-c051acd6f22b h1:c
 github.com/jakecoffman/ebiten/v2 v2.1.0-alpha.0.20201017114317-c051acd6f22b/go.mod h1:PGTOnJeFMv3Te9PhG8FSO4+ssFpz6XyO56aa9jBq16E=
 github.com/jakecoffman/ebiten/v2 v2.1.0-alpha.0.20201018160528-0018f37928ca h1:QXtSBQJ0moYd+UdJMPLu88nmiuGTw+T+t91yk2B8Q+U=
 github.com/jakecoffman/ebiten/v2 v2.1.0-alpha.0.20201018160528-0018f37928ca/go.mod h1:PGTOnJeFMv3Te9PhG8FSO4+ssFpz6XyO56aa9jBq16E=
+github.com/jakecoffman/ebiten/v2 v2.1.0-alpha.0.20201018205144-b91defe61448 h1:eQ4fd1limm29xyuVxxuojGA7IKWHCiTwtQfrN3m3tO8=
+github.com/jakecoffman/ebiten/v2 v2.1.0-alpha.0.20201018205144-b91defe61448/go.mod h1:PGTOnJeFMv3Te9PhG8FSO4+ssFpz6XyO56aa9jBq16E=
 github.com/jfreymuth/oggvorbis v1.0.1/go.mod h1:NqS+K+UXKje0FUYUPosyQ+XTVvjmVjps1aEZH1sumIk=
 github.com/jfreymuth/vorbis v1.0.0/go.mod h1:8zy3lUAm9K/rJJk223RKy6vjCZTWC61NA2QD06bfOE0=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
