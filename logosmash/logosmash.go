@@ -72,7 +72,7 @@ func NewGame() *Game {
 }
 
 func (g *Game) Update() error {
-	cpebiten.UpdateInput(g.space)
+	cpebiten.Update(g.space)
 	g.space.Step(1.0 / float64(ebiten.MaxTPS()))
 	return nil
 }

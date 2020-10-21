@@ -15,10 +15,13 @@ github.com/hajimehoshi/ebiten/v2 v2.0.0-rc.1.0.20201015142520-09a6769fa70e h1:aZ
 github.com/hajimehoshi/ebiten/v2 v2.0.0-rc.1.0.20201015142520-09a6769fa70e/go.mod h1:PGTOnJeFMv3Te9PhG8FSO4+ssFpz6XyO56aa9jBq16E=
 github.com/hajimehoshi/ebiten/v2 v2.1.0-alpha.0.20201017083052-1d82aec7129e h1:mKG5u03ZyDrB5IFzAiOB3leEI4HIhCttdqP61SbpJAs=
 github.com/hajimehoshi/ebiten/v2 v2.1.0-alpha.0.20201017083052-1d82aec7129e/go.mod h1:PGTOnJeFMv3Te9PhG8FSO4+ssFpz6XyO56aa9jBq16E=
+github.com/hajimehoshi/ebiten/v2 v2.1.0-alpha.0.20201021023308-d6eac8c5bff3 h1:d0t51/6i8cgCLaHFCHEpdPwafos8VNu3bXW1983k8uQ=
+github.com/hajimehoshi/ebiten/v2 v2.1.0-alpha.0.20201021023308-d6eac8c5bff3/go.mod h1:hpZZQ/kk8DZqft7QsQ5hZLRQXHSZPdKnaa0tcJ3CZFE=
 github.com/hajimehoshi/file2byteslice v0.0.0-20200812174855-0e5e8a80490e/go.mod h1:CqqAHp7Dk/AqQiwuhV1yT2334qbA/tFWQW0MD2dGqUE=
 github.com/hajimehoshi/go-mp3 v0.3.1/go.mod h1:qMJj/CSDxx6CGHiZeCgbiq2DSUkbK0UbtXShQcnfyMM=
 github.com/hajimehoshi/oto v0.6.1/go.mod h1:0QXGEkbuJRohbJaxr7ZQSxnju7hEhseiPx2hrh6raOI=
 github.com/hajimehoshi/oto v0.6.6-0.20201012021214-90150a1b9603/go.mod h1:0QXGEkbuJRohbJaxr7ZQSxnju7hEhseiPx2hrh6raOI=
+github.com/hajimehoshi/oto v0.6.6/go.mod h1:0QXGEkbuJRohbJaxr7ZQSxnju7hEhseiPx2hrh6raOI=
 github.com/jakecoffman/cp v1.0.0 h1:4qi6RDQxnEgH2aonA5Wa67VYy9onrlzsIg0Uk7tlf0o=
 github.com/jakecoffman/cp v1.0.0/go.mod h1:JjY/Fp6d8E1CHnu74gWNnU0+b9VzEdUVPoJxg2PsTQg=
 github.com/jakecoffman/ebiten/v2 v2.1.0-alpha.0.20201017114317-c051acd6f22b h1:cB8P+v9Be/oJyWpAmufx5dC3itlQtF3k+/gX9dMU97o=
@@ -77,6 +80,8 @@ golang.org/x/sys v0.0.0-20201009025420-dfb3f7c4e634 h1:bNEHhJCnrwMKNMmOx3yAynp5v
 golang.org/x/sys v0.0.0-20201009025420-dfb3f7c4e634/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20201016160150-f659759dc4ca h1:mLWBs1i4Qi5cHWGEtn2jieJQ2qtwV/gT0A2zLrmzaoE=
 golang.org/x/sys v0.0.0-20201016160150-f659759dc4ca/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20201020230747-6e5568b54d1a h1:e3IU37lwO4aq3uoRKINC7JikojFmE5gO7xhfxs8VC34=
+golang.org/x/sys v0.0.0-20201020230747-6e5568b54d1a/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/tools v0.0.0-20190312151545-0bb0c0a6e846/go.mod h1:LCzVGOaR6xXOjkQ3onu1FJEFr0SW1gC7cKk1uF8kGRs=
 golang.org/x/tools v0.0.0-20191119224855-298f0cb1881e/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=

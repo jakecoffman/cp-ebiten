@@ -4,7 +4,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/jakecoffman/cp"
+	"log"
 	"math"
+	"os"
+	"runtime/pprof"
 )
 
 var GrabbableMaskBit uint = 1 << 31
@@ -53,7 +56,36 @@ var (
 	touches    = map[ebiten.TouchID]*touchInfo{}
 )
 
-func UpdateInput(space *cp.Space) {
+var profiling, vsync bool
+var profile *os.File
+
+func Update(space *cp.Space) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyF10) {
+		os.Exit(0)
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+		if !profiling {
+			f, err := os.Create("profile")
+			if err != nil {
+				log.Fatal(err)
+			}
+			profile = f
+			if err := pprof.StartCPUProfile(profile); err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			pprof.StopCPUProfile()
+			profile.Close()
+		}
+		profiling = !profiling
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyV) {
+		ebiten.SetVsyncEnabled(vsync)
+		vsync = !vsync
+	}
+
 	x, y := ebiten.CursorPosition()
 	mouse := cp.Vector{float64(x), float64(y)}
 

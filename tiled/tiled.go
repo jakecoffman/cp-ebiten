@@ -219,7 +219,7 @@ func NewGame() *Game {
 }
 
 func (g *Game) Update() error {
-	cpebiten.UpdateInput(g.space)
+	cpebiten.Update(g.space)
 
 	if ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyLeft) {
 		g.camera.Position[0] -= 1
