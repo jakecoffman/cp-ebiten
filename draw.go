@@ -9,7 +9,8 @@ import (
 	"time"
 )
 
-const nanoToSec = 1_000_000_00
+const nanoToSec = 1_000_000_000
+
 var currentTime float64
 var lastFps = currentTime
 var frames, fps int
@@ -19,7 +20,7 @@ func Draw(space *cp.Space, screen *ebiten.Image) {
 	//dt := currentTime - lastTime
 	//lastTime = currentTime
 	frames++
-	if currentTime - lastFps >= 1 {
+	if currentTime-lastFps >= 1 {
 		fps = frames
 		frames = 0
 		lastFps = currentTime
@@ -35,7 +36,7 @@ func Draw(space *cp.Space, screen *ebiten.Image) {
 		draw(screen, op)
 	})
 
-	out := fmt.Sprintf("FPS: %v", fps)
+	out := fmt.Sprintf("FPS: %v %0.2f", fps, ebiten.CurrentFPS())
 	if profiling {
 		out += "\nprofiling"
 	}
