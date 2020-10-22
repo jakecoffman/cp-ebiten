@@ -2,8 +2,8 @@ package cpebiten
 
 import (
 	"github.com/fogleman/gg"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/jakecoffman/cp"
 	"image/color"
 	"math"
@@ -32,7 +32,7 @@ func AddWall(space *cp.Space, body *cp.Body, a, b cp.Vector, radius float64) *cp
 	dc.DrawRoundedRectangle(0, 0, w, h, r)
 	dc.SetRGB(1, 1, 1)
 	dc.Fill()
-	img, _ := ebiten.NewImageFromImage(dc.Image(), ebiten.FilterDefault)
+	img := ebiten.NewImageFromImage(dc.Image())
 
 	center := cp.Vector{(a.X + b.X)/2, (a.Y+b.Y)/2}
 	offset := center.Sub(body.Position())
@@ -54,7 +54,7 @@ func AddWall(space *cp.Space, body *cp.Body, a, b cp.Vector, radius float64) *cp
 		op.GeoM.Rotate(seg.Body().Angle())
 		op.GeoM.Translate(pos.X, pos.Y)
 
-		_ = screen.DrawImage(img, op)
+		screen.DrawImage(img, op)
 		op.GeoM.Reset()
 	}
 	return shape
@@ -78,14 +78,14 @@ func AddSegment(space *cp.Space, pos cp.Vector, mass, width, height float64) *cp
 	dc.DrawRoundedRectangle(0, 0, w, h, r)
 	dc.SetColor(ColorForShape(shape))
 	dc.Fill()
-	img, _ := ebiten.NewImageFromImage(dc.Image(), ebiten.FilterDefault)
+	img := ebiten.NewImageFromImage(dc.Image())
 
 	shape.UserData = func(screen *ebiten.Image, op *ebiten.DrawImageOptions) {
 		op.GeoM.Translate(-width/2, -height/2)
 		op.GeoM.Rotate(seg.Body().Angle())
 		pos := seg.Body().Position()
 		op.GeoM.Translate(pos.X, pos.Y)
-		_ = screen.DrawImage(img, op)
+		screen.DrawImage(img, op)
 		op.GeoM.Reset()
 	}
 	return shape
@@ -103,14 +103,14 @@ func AddBox(space *cp.Space, pos cp.Vector, mass, width, height float64) *cp.Sha
 	dc.DrawRectangle(0, 0, width, height)
 	dc.SetColor(ColorForShape(shape))
 	dc.Fill()
-	img, _ := ebiten.NewImageFromImage(dc.Image(), ebiten.FilterDefault)
+	img := ebiten.NewImageFromImage(dc.Image())
 
 	shape.UserData = func(screen *ebiten.Image, op *ebiten.DrawImageOptions) {
 		op.GeoM.Translate(-width/2, -height/2)
 		op.GeoM.Rotate(body.Angle())
 		pos := body.Position()
 		op.GeoM.Translate(pos.X, pos.Y)
-		_ = screen.DrawImage(img, op)
+		screen.DrawImage(img, op)
 		op.GeoM.Reset()
 	}
 
@@ -128,14 +128,14 @@ func AddStaticBox(space *cp.Space, pos cp.Vector, width, height float64) *cp.Sha
 	dc.DrawRectangle(0, 0, width, height)
 	dc.SetColor(ColorForShape(shape))
 	dc.Fill()
-	img, _ := ebiten.NewImageFromImage(dc.Image(), ebiten.FilterDefault)
+	img := ebiten.NewImageFromImage(dc.Image())
 
 	shape.UserData = func(screen *ebiten.Image, op *ebiten.DrawImageOptions) {
 		op.GeoM.Translate(-width/2, -height/2)
 		op.GeoM.Rotate(body.Angle())
 		pos := body.Position()
 		op.GeoM.Translate(pos.X, pos.Y)
-		_ = screen.DrawImage(img, op)
+		screen.DrawImage(img, op)
 		op.GeoM.Reset()
 	}
 
@@ -155,13 +155,13 @@ func AddCircle(space *cp.Space, pos cp.Vector, mass, radius float64) *cp.Shape {
 	dc.DrawCircle(circle.Radius(), circle.Radius(), circle.Radius())
 	dc.SetColor(ColorForShape(shape))
 	dc.Fill()
-	img, _ := ebiten.NewImageFromImage(dc.Image(), ebiten.FilterDefault)
+	img := ebiten.NewImageFromImage(dc.Image())
 	shape.UserData = func(screen *ebiten.Image, op *ebiten.DrawImageOptions) {
 		op.GeoM.Translate(-circle.Radius(), -circle.Radius())
 		op.GeoM.Rotate(body.Angle())
 		center := circle.TransformC()
 		op.GeoM.Translate(center.X, center.Y)
-		_ = screen.DrawImage(img, op)
+		screen.DrawImage(img, op)
 		op.GeoM.Reset()
 	}
 

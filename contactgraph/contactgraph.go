@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/jakecoffman/cp"
 	"github.com/jakecoffman/cpebiten"
 	"image/color"
@@ -55,14 +55,14 @@ func NewGame() *Game {
 	}
 }
 
-func (g *Game) Update(*ebiten.Image) error {
-	cpebiten.UpdateInput(g.space)
+func (g *Game) Update() error {
+	cpebiten.Update(g.space)
 	g.space.Step(1.0 / float64(ebiten.MaxTPS()))
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	_ = screen.Fill(color.Black)
+	screen.Fill(color.Black)
 
 	op := &ebiten.DrawImageOptions{}
 	op.ColorM.Scale(200.0/255.0, 200.0/255.0, 200.0/255.0, 1)
@@ -115,7 +115,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 Total force: %5.2f, Total weight: %5.2f. The ball is touching %d shapes
 ` + crush
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf(str, force, weight, count, crushForce), 0, 100)
-	_ = ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f FPS: %0.2f", ebiten.CurrentTPS(), ebiten.CurrentFPS()))
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f FPS: %0.2f", ebiten.CurrentTPS(), ebiten.CurrentFPS()))
 }
 
 func (g *Game) Layout(int, int) (int, int) {
@@ -123,8 +123,6 @@ func (g *Game) Layout(int, int) (int, int) {
 }
 
 func main() {
-	ebiten.SetVsyncEnabled(false)
-
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Contact Graph")
 	if err := ebiten.RunGame(NewGame()); err != nil {

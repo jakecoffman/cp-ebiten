@@ -1,10 +1,16 @@
 package cpebiten
 
 import (
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/inpututil"
+	"fmt"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/jakecoffman/cp"
+	"image/color"
+	"log"
 	"math"
+	"os"
+	"runtime/pprof"
 )
 
 var GrabbableMaskBit uint = 1 << 31
@@ -42,7 +48,7 @@ func handleGrab(space *cp.Space, pos cp.Vector, touchBody *cp.Body) *cp.Constrai
 }
 
 type touchInfo struct {
-	id    int
+	id    ebiten.TouchID
 	body  *cp.Body
 	joint *cp.Constraint
 }
@@ -50,12 +56,34 @@ type touchInfo struct {
 var (
 	mouseBody  = cp.NewKinematicBody()
 	mouseJoint *cp.Constraint
-	touches    = map[int]*touchInfo{}
+	touches    = map[ebiten.TouchID]*touchInfo{}
 )
 
-var vsync bool
+var profiling, vsync bool
+var profile *os.File
 
-func UpdateInput(space *cp.Space) {
+func Update(space *cp.Space) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyF10) {
+		os.Exit(0)
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+		if !profiling {
+			f, err := os.Create("profile")
+			if err != nil {
+				log.Fatal(err)
+			}
+			profile = f
+			if err := pprof.StartCPUProfile(profile); err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			pprof.StopCPUProfile()
+			profile.Close()
+		}
+		profiling = !profiling
+	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyV) {
 		ebiten.SetVsyncEnabled(vsync)
 		vsync = !vsync
@@ -103,4 +131,22 @@ func UpdateInput(space *cp.Space) {
 	newPoint := mouseBody.Position().Lerp(mouse, 0.25)
 	mouseBody.SetVelocityVector(newPoint.Sub(mouseBody.Position()).Mult(60.0))
 	mouseBody.SetPosition(newPoint)
+}
+
+func Draw(space *cp.Space, screen *ebiten.Image) {
+	screen.Fill(color.Black)
+
+	op := &ebiten.DrawImageOptions{}
+	op.ColorM.Scale(200.0/255.0, 200.0/255.0, 200.0/255.0, 1)
+
+	space.EachShape(func(shape *cp.Shape) {
+		draw := shape.UserData.(func(*ebiten.Image, *ebiten.DrawImageOptions))
+		draw(screen, op)
+	})
+
+	out := fmt.Sprintf("FPS: %0.2f", ebiten.CurrentFPS())
+	if profiling {
+		out += "\nprofiling"
+	}
+	ebitenutil.DebugPrint(screen, out)
 }

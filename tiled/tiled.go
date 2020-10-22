@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
-	"github.com/hajimehoshi/ebiten/inpututil"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/jakecoffman/cp"
 	"github.com/jakecoffman/cpebiten"
 	"golang.org/x/image/math/f64"
@@ -111,7 +111,7 @@ func (c *Camera) worldMatrix() ebiten.GeoM {
 }
 
 func (c *Camera) Render(world, screen *ebiten.Image) {
-	_ = screen.DrawImage(world, &ebiten.DrawImageOptions{
+	screen.DrawImage(world, &ebiten.DrawImageOptions{
 		GeoM: c.worldMatrix(),
 	})
 }
@@ -183,7 +183,7 @@ func NewGame() *Game {
 		if err = f.Close(); err != nil {
 			panic(err)
 		}
-		tilesImage, _ := ebiten.NewImageFromImage(img, ebiten.FilterDefault)
+		tilesImage := ebiten.NewImageFromImage(img)
 
 		index := entry.Firstgid
 
@@ -202,7 +202,7 @@ func NewGame() *Game {
 	}
 
 	worldWidth, worldHeight := map1.Width*map1.TileHeight, map1.Height*map1.TileWidth
-	world, _ := ebiten.NewImage(worldWidth, worldHeight, ebiten.FilterDefault)
+	world := ebiten.NewImage(worldWidth, worldHeight)
 
 	return &Game{
 		space: space,
@@ -218,8 +218,8 @@ func NewGame() *Game {
 	}
 }
 
-func (g *Game) Update(*ebiten.Image) error {
-	cpebiten.UpdateInput(g.space)
+func (g *Game) Update() error {
+	cpebiten.Update(g.space)
 
 	if ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyLeft) {
 		g.camera.Position[0] -= 1
@@ -258,7 +258,7 @@ func (g *Game) Update(*ebiten.Image) error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	_ = screen.Fill(color.Black)
+	screen.Fill(color.Black)
 
 	op := &ebiten.DrawImageOptions{}
 	op.ColorM.Scale(200.0/255.0, 200.0/255.0, 200.0/255.0, 1)
@@ -272,7 +272,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			if img == nil {
 				panic("image nil at tile " + fmt.Sprint(tile))
 			}
-			_ = g.world.DrawImage(img.(*ebiten.Image), op)
+			g.world.DrawImage(img.(*ebiten.Image), op)
 		}
 	}
 
@@ -285,9 +285,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	g.camera.Render(g.world, screen)
 
-	_ = ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f FPS: %0.2f", ebiten.CurrentTPS(), ebiten.CurrentFPS()))
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f FPS: %0.2f", ebiten.CurrentTPS(), ebiten.CurrentFPS()))
 	worldX, worldY := g.camera.ScreenToWorld(ebiten.CursorPosition())
-	_ = ebitenutil.DebugPrint(
+	ebitenutil.DebugPrint(
 		screen,
 		fmt.Sprintf("TPS: %0.2f\nMove (WASD/Arrows)\nZoom (QE)\nRotate (R)\nReset (Space)", ebiten.CurrentTPS()),
 	)
