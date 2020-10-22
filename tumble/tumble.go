@@ -64,6 +64,7 @@ func (g *Game) Update() error {
 	cpebiten.Update(g.space)
 	g.space.Step(1.0 / 180.)
 	g.space.Step(1.0 / 180.)
+	g.space.Step(1.0 / 180.)
 	return nil
 }
 

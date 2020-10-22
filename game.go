@@ -1,9 +1,12 @@
 package cpebiten
 
 import (
+	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/jakecoffman/cp"
+	"image/color"
 	"log"
 	"math"
 	"os"
@@ -128,4 +131,22 @@ func Update(space *cp.Space) {
 	newPoint := mouseBody.Position().Lerp(mouse, 0.25)
 	mouseBody.SetVelocityVector(newPoint.Sub(mouseBody.Position()).Mult(60.0))
 	mouseBody.SetPosition(newPoint)
+}
+
+func Draw(space *cp.Space, screen *ebiten.Image) {
+	screen.Fill(color.Black)
+
+	op := &ebiten.DrawImageOptions{}
+	op.ColorM.Scale(200.0/255.0, 200.0/255.0, 200.0/255.0, 1)
+
+	space.EachShape(func(shape *cp.Shape) {
+		draw := shape.UserData.(func(*ebiten.Image, *ebiten.DrawImageOptions))
+		draw(screen, op)
+	})
+
+	out := fmt.Sprintf("FPS: %0.2f", ebiten.CurrentFPS())
+	if profiling {
+		out += "\nprofiling"
+	}
+	ebitenutil.DebugPrint(screen, out)
 }
