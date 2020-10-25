@@ -9,6 +9,36 @@ import (
 
 const DrawPointLineScale = 1
 
+var shader *ebiten.Shader
+
+func init() {
+	var err error
+	shader, err = ebiten.NewShader([]byte(`package main
+func aa_step(t1, t2, f float) float {
+	return smoothstep(t1, t2, f)
+}
+
+func Fragment(position vec4, aa vec2, color vec4) vec4 {
+	l := length(aa)
+
+	fw := length(fwidth(aa))
+
+	// Outline width threshold.
+	ow := 1.0 - fw
+
+	// Fill/outline color.
+	fo_step := aa_step(max(ow - fw, 0.0), ow, l)
+	fo_color := mix(color, vec4(1), fo_step)
+
+	// Use pre-multiplied alpha.
+	alpha := 1.0 - aa_step(1.0 - fw, 1.0, l)
+	return fo_color*(fo_color.a*alpha)
+}`))
+	if err != nil {
+		panic(err)
+	}
+}
+
 // 8 bytes
 type v2f struct {
 	x, y float32
@@ -42,11 +72,22 @@ func (o *DrawOptions) DrawBB(bb cp.BB, outline cp.FColor) {
 }
 
 type DrawOptions struct {
-	screen *ebiten.Image
+	img *ebiten.Image
 }
 
-func NewDrawOptions(screen *ebiten.Image) *DrawOptions {
-	return &DrawOptions{screen: screen}
+func NewDrawOptions(img *ebiten.Image) *DrawOptions {
+	return &DrawOptions{
+		img: img,
+	}
+}
+
+func FcolorToColor(c cp.FColor) color.Color {
+	return color.RGBA{
+		R: uint8(c.R * 255),
+		G: uint8(c.G * 255),
+		B: uint8(c.B * 255),
+		A: uint8(c.A * 255),
+	}
 }
 
 func (o *DrawOptions) DrawCircle(pos cp.Vector, angle, radius float64, outline, fill cp.FColor, _ interface{}) {
@@ -80,20 +121,15 @@ func (o *DrawOptions) DrawCircle(pos cp.Vector, angle, radius float64, outline, 
 	//t1 := Triangle{a, c, d}
 
 	verts := []ebiten.Vertex{
-		{DstX: a.vertex.x, DstY: a.vertex.y, SrcX: 1, SrcY: 1, ColorR: 0, ColorG: 1, ColorB: 1, ColorA: 1},
-		{DstX: b.vertex.x, DstY: b.vertex.y, SrcX: 1, SrcY: 1, ColorR: 0, ColorG: 1, ColorB: 1, ColorA: 1},
-		{DstX: c.vertex.x, DstY: c.vertex.y, SrcX: 1, SrcY: 1, ColorR: 0, ColorG: 1, ColorB: 1, ColorA: 1},
-		{DstX: d.vertex.x, DstY: d.vertex.y, SrcX: 1, SrcY: 1, ColorR: 0, ColorG: 1, ColorB: 1, ColorA: 1},
+		{DstX: a.vertex.x, DstY: a.vertex.y, SrcX: a.aa_coord.x, SrcY: a.aa_coord.y, ColorR: fill.R, ColorG: fill.G, ColorB: fill.B, ColorA: fill.A},
+		{DstX: b.vertex.x, DstY: b.vertex.y, SrcX: b.aa_coord.x, SrcY: b.aa_coord.y, ColorR: fill.R, ColorG: fill.G, ColorB: fill.B, ColorA: fill.A},
+		{DstX: c.vertex.x, DstY: c.vertex.y, SrcX: c.aa_coord.x, SrcY: c.aa_coord.y, ColorR: fill.R, ColorG: fill.G, ColorB: fill.B, ColorA: fill.A},
+		{DstX: d.vertex.x, DstY: d.vertex.y, SrcX: d.aa_coord.x, SrcY: d.aa_coord.y, ColorR: fill.R, ColorG: fill.G, ColorB: fill.B, ColorA: fill.A},
 	}
 
 	emptyImage := ebiten.NewImage(16, 16)
 	emptyImage.Fill(color.White)
-	o.screen.DrawTriangles(verts, []uint16{0, 1, 2, 0, 2, 3}, emptyImage, &ebiten.DrawTrianglesOptions{})
-	//o.screen.DrawTrianglesShader(verts, []uint16{0, 1, 2, 0, 2, 3}, shader, &ebiten.DrawTrianglesShaderOptions{
-	//	CompositeMode: 0,
-	//	Uniforms:      nil,
-	//	Images:        [4]*ebiten.Image{},
-	//})
+	o.img.DrawTrianglesShader(verts, []uint16{0, 1, 2, 0, 2, 3}, shader, &ebiten.DrawTrianglesShaderOptions{})
 
 	//triangleStack = append(triangleStack, t0)
 	//triangleStack = append(triangleStack, t1)

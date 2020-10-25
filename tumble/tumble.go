@@ -45,9 +45,9 @@ func NewGame() *Game {
 
 			typ := rand.Intn(3)
 			if typ == 0 {
-				cpebiten.AddBox(space, pos, mass, width, height)
+				//cpebiten.AddBox(space, pos, mass, width, height)
 			} else if typ == 1 {
-				cpebiten.AddSegment(space, pos, mass, width, height)
+				//cpebiten.AddSegment(space, pos, mass, width, height)
 			} else {
 				cpebiten.AddCircle(space, pos.Add(cp.Vector{0, (height - width) / 2}), mass, width/2)
 				cpebiten.AddCircle(space, pos.Add(cp.Vector{0, (width - height) / 2}), mass, width/2)
@@ -71,7 +71,7 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	opts := cpebiten.NewDrawOptions(screen)
 	cp.DrawSpace(g.space, opts)
-	//cpebiten.Draw(g.space, screen)
+	cpebiten.Draw(g.space, screen)
 }
 
 func (g *Game) Layout(int, int) (int, int) {

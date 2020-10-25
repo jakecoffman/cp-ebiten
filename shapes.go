@@ -150,20 +150,6 @@ func AddCircle(space *cp.Space, pos cp.Vector, mass, radius float64) *cp.Shape {
 	shape.SetElasticity(0)
 	shape.SetFriction(0.7)
 
-	dc := gg.NewContext(int(circle.Radius()*2), int(circle.Radius()*2))
-	dc.DrawCircle(circle.Radius(), circle.Radius(), circle.Radius())
-	dc.SetColor(ColorForShape(shape))
-	dc.Fill()
-	img := ebiten.NewImageFromImage(dc.Image())
-	shape.UserData = func(screen *ebiten.Image, op *ebiten.DrawImageOptions) {
-		op.GeoM.Translate(-circle.Radius(), -circle.Radius())
-		op.GeoM.Rotate(body.Angle())
-		center := circle.TransformC()
-		op.GeoM.Translate(center.X, center.Y)
-		screen.DrawImage(img, op)
-		op.GeoM.Reset()
-	}
-
 	return shape
 }
 
