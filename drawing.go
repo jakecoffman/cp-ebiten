@@ -229,15 +229,23 @@ func (o *DrawOptions) DrawPolygon(count int, verts []cp.Vector, radius float64, 
 
 	inset := -math.Max(0, 1.0/DrawPointLineScale-radius)
 	for i := 0; i < count-2; i++ {
-		_ = V2f(verts[0].Add(extrude[0].offset.Mult(inset)))
-		_ = V2f(verts[i+1].Add(extrude[i+1].offset.Mult(inset)))
-		_ = V2f(verts[i+2].Add(extrude[i+2].offset.Mult(inset)))
+		v0 := V2f(verts[0].Add(extrude[0].offset.Mult(inset)))
+		v1 := V2f(verts[i+1].Add(extrude[i+1].offset.Mult(inset)))
+		v2 := V2f(verts[i+2].Add(extrude[i+2].offset.Mult(inset)))
 
 		//triangleStack = append(triangleStack, Triangle{
 		//	Vertex{v0, v2f0(), fill, fill},
 		//	Vertex{v1, v2f0(), fill, fill},
 		//	Vertex{v2, v2f0(), fill, fill},
 		//})
+
+		verts := []ebiten.Vertex{
+			{v0.x, v0.y, 0, 0, fill.R, fill.G, fill.B, fill.A},
+			{v1.x, v1.y, 0, 0, fill.R, fill.G, fill.B, fill.A},
+			{v2.x, v2.y, 0, 0, fill.R, fill.G, fill.B, fill.A},
+		}
+
+		o.img.DrawTrianglesShader(verts, []uint16{0, 1, 2}, shader, &ebiten.DrawTrianglesShaderOptions{})
 	}
 
 	outset := 1.0/DrawPointLineScale + radius - inset
@@ -266,26 +274,42 @@ func (o *DrawOptions) DrawPolygon(count int, verts []cp.Vector, radius float64, 
 		n1 := V2f(nB)
 		offset0 := V2f(offsetA)
 
-		_ = Triangle{
-			Vertex{inner0, v2f0(), fill, outline},
-			Vertex{inner1, v2f0(), fill, outline},
-			Vertex{outer1, n1, fill, outline},
+		//_ = Triangle{
+		//	Vertex{inner0, v2f0(), fill, outline},
+		//	Vertex{inner1, v2f0(), fill, outline},
+		//	Vertex{outer1, n1, fill, outline},
+		//}
+		//_ = Triangle{
+		//	Vertex{inner0, v2f0(), fill, outline},
+		//	Vertex{outer0, n1, fill, outline},
+		//	Vertex{outer1, n1, fill, outline},
+		//}
+		//_ = Triangle{
+		//	Vertex{inner0, v2f0(), fill, outline},
+		//	Vertex{outer0, n1, fill, outline},
+		//	Vertex{outer2, offset0, fill, outline},
+		//}
+		//_ = Triangle{
+		//	Vertex{inner0, v2f0(), fill, outline},
+		//	Vertex{outer2, offset0, fill, outline},
+		//	Vertex{outer3, n0, fill, outline},
+		//}
+
+		verts := []ebiten.Vertex{
+			{inner0.x, inner0.y, 0, 0, fill.R, fill.G, fill.B, fill.A},
+			{inner1.x, inner1.y, 0, 0, fill.R, fill.G, fill.B, fill.A},
+			{outer0.x, outer0.y, n1.x, n1.y, fill.R, fill.G, fill.B, fill.A},
+			{outer1.x, outer1.y, n1.x, n1.y, fill.R, fill.G, fill.B, fill.A},
+			{outer2.x, outer2.y, offset0.x, offset0.y, fill.R, fill.G, fill.B, fill.A},
+			{outer3.x, outer3.y, n0.x, n0.y, fill.R, fill.G, fill.B, fill.A},
 		}
-		_ = Triangle{
-			Vertex{inner0, v2f0(), fill, outline},
-			Vertex{outer0, n1, fill, outline},
-			Vertex{outer1, n1, fill, outline},
-		}
-		_ = Triangle{
-			Vertex{inner0, v2f0(), fill, outline},
-			Vertex{outer0, n1, fill, outline},
-			Vertex{outer2, offset0, fill, outline},
-		}
-		_ = Triangle{
-			Vertex{inner0, v2f0(), fill, outline},
-			Vertex{outer2, offset0, fill, outline},
-			Vertex{outer3, n0, fill, outline},
-		}
+
+		o.img.DrawTrianglesShader(verts, []uint16{
+			0, 1, 3,
+			0, 2, 3,
+			0, 2, 4,
+			0, 4, 5,
+		}, shader, &ebiten.DrawTrianglesShaderOptions{})
 
 		j = i
 		i++
