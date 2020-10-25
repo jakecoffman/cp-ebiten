@@ -3,7 +3,6 @@ package cpebiten
 import (
 	"github.com/fogleman/gg"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/jakecoffman/cp"
 	"image/color"
 	"math"
@@ -219,10 +218,10 @@ func ColorForShape(shape *cp.Shape) color.Color {
 	}
 }
 
-func DrawBB(image *ebiten.Image, bb cp.BB) {
-	red := color.RGBA{255, 0, 0, 255}
-	ebitenutil.DrawLine(image, bb.R, bb.B, bb.R, bb.T, red)
-	ebitenutil.DrawLine(image, bb.R, bb.T, bb.L, bb.T, red)
-	ebitenutil.DrawLine(image, bb.L, bb.T, bb.L, bb.B, red)
-	ebitenutil.DrawLine(image, bb.L, bb.B, bb.R, bb.B, red)
-}
+//func DrawBB(image *ebiten.Image, bb cp.BB) {
+//	red := color.RGBA{255, 0, 0, 255}
+//	ebitenutil.DrawLine(image, bb.R, bb.B, bb.R, bb.T, red)
+//	ebitenutil.DrawLine(image, bb.R, bb.T, bb.L, bb.T, red)
+//	ebitenutil.DrawLine(image, bb.L, bb.T, bb.L, bb.B, red)
+//	ebitenutil.DrawLine(image, bb.L, bb.B, bb.R, bb.B, red)
+//}

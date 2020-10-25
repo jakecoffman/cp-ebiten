@@ -69,7 +69,9 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	cpebiten.Draw(g.space, screen)
+	opts := cpebiten.NewDrawOptions(screen)
+	cp.DrawSpace(g.space, opts)
+	//cpebiten.Draw(g.space, screen)
 }
 
 func (g *Game) Layout(int, int) (int, int) {

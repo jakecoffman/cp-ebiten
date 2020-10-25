@@ -150,3 +150,4 @@ func Draw(space *cp.Space, screen *ebiten.Image) {
 	}
 	ebitenutil.DebugPrint(screen, out)
 }
+
