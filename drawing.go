@@ -3,7 +3,6 @@ package cpebiten
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/jakecoffman/cp"
-	"image/color"
 	"math"
 )
 
@@ -39,28 +38,6 @@ func Fragment(position vec4, aa vec2, color vec4) vec4 {
 	}
 }
 
-// 8 bytes
-type v2f struct {
-	x, y float32
-}
-
-func V2f(v cp.Vector) v2f {
-	return v2f{float32(v.X), float32(v.Y)}
-}
-func v2f0() v2f {
-	return v2f{0, 0}
-}
-
-// 8*2 + 16*2 bytes = 48 bytes
-type Vertex struct {
-	vertex, aa_coord          v2f
-	fill_color, outline_color cp.FColor
-}
-
-type Triangle struct {
-	a, b, c Vertex
-}
-
 func (o *DrawOptions) DrawBB(bb cp.BB, outline cp.FColor) {
 	verts := []cp.Vector{
 		{bb.R, bb.B},
@@ -81,56 +58,20 @@ func NewDrawOptions(img *ebiten.Image) *DrawOptions {
 	}
 }
 
-func FcolorToColor(c cp.FColor) color.Color {
-	return color.RGBA{
-		R: uint8(c.R * 255),
-		G: uint8(c.G * 255),
-		B: uint8(c.B * 255),
-		A: uint8(c.A * 255),
-	}
-}
-
 func (o *DrawOptions) DrawCircle(pos cp.Vector, angle, radius float64, outline, fill cp.FColor, _ interface{}) {
 	r := radius + 1/DrawPointLineScale
-	a := Vertex{
-		v2f{float32(pos.X - r), float32(pos.Y - r)},
-		v2f{-1, -1},
-		fill,
-		outline,
-	}
-	b := Vertex{
-		v2f{float32(pos.X - r), float32(pos.Y + r)},
-		v2f{-1, 1},
-		fill,
-		outline,
-	}
-	c := Vertex{
-		v2f{float32(pos.X + r), float32(pos.Y + r)},
-		v2f{1, 1},
-		fill,
-		outline,
-	}
-	d := Vertex{
-		v2f{float32(pos.X + r), float32(pos.Y - r)},
-		v2f{1, -1},
-		fill,
-		outline,
-	}
-
-	//t0 := Triangle{a, b, c}
-	//t1 := Triangle{a, c, d}
 
 	verts := []ebiten.Vertex{
-		{a.vertex.x, a.vertex.y, a.aa_coord.x, a.aa_coord.y, fill.R, fill.G, fill.B, fill.A},
-		{b.vertex.x, b.vertex.y, b.aa_coord.x, b.aa_coord.y, fill.R, fill.G, fill.B, fill.A},
-		{c.vertex.x, c.vertex.y, c.aa_coord.x, c.aa_coord.y, fill.R, fill.G, fill.B, fill.A},
-		{d.vertex.x, d.vertex.y, d.aa_coord.x, d.aa_coord.y, fill.R, fill.G, fill.B, fill.A},
+		{float32(pos.X - r), float32(pos.Y - r), -1, -1, fill.R, fill.G, fill.B, fill.A},
+		{float32(pos.X - r), float32(pos.Y + r), -1, 1, fill.R, fill.G, fill.B, fill.A},
+		{float32(pos.X + r), float32(pos.Y + r), 1, 1, fill.R, fill.G, fill.B, fill.A},
+		{float32(pos.X + r), float32(pos.Y - r), 1, -1, fill.R, fill.G, fill.B, fill.A},
 	}
 
-	o.img.DrawTrianglesShader(verts, []uint16{0, 1, 2, 0, 2, 3}, shader, &ebiten.DrawTrianglesShaderOptions{})
-
-	//triangleStack = append(triangleStack, t0)
-	//triangleStack = append(triangleStack, t1)
+	o.img.DrawTrianglesShader(verts, []uint16{
+		0, 1, 2,
+		0, 2, 3,
+	}, shader, &ebiten.DrawTrianglesShaderOptions{})
 
 	o.DrawFatSegment(pos, pos.Add(cp.ForAngle(angle).Mult(radius-DrawPointLineScale*0.5)), 0, outline, fill, nil)
 }
@@ -153,50 +94,24 @@ func (o *DrawOptions) DrawFatSegment(a, b cp.Vector, radius float64, outline, fi
 
 	nw := n.Mult(r)
 	tw := t.Mult(r)
-	v0 := V2f(b.Sub(nw.Add(tw)))
-	v1 := V2f(b.Add(nw.Sub(tw)))
-	v2 := V2f(b.Sub(nw))
-	v3 := V2f(b.Add(nw))
-	v4 := V2f(a.Sub(nw))
-	v5 := V2f(a.Add(nw))
-	v6 := V2f(a.Sub(nw.Sub(tw)))
-	v7 := V2f(a.Add(nw.Add(tw)))
-
-	//triangles := []Triangle{{
-	//	Vertex{v0, v2f{1, -1}, fill, outline},
-	//	Vertex{v1, v2f{1, 1}, fill, outline},
-	//	Vertex{v2, v2f{0, -1}, fill, outline},
-	//},{
-	//	Vertex{v3, v2f{0, 1}, fill, outline},
-	//	Vertex{v1, v2f{1, 1}, fill, outline},
-	//	Vertex{v2, v2f{0, -1}, fill, outline},
-	//}, {
-	//	Vertex{v3, v2f{0, 1}, fill, outline},
-	//	Vertex{v4, v2f{0, -1}, fill, outline},
-	//	Vertex{v2, v2f{0, -1}, fill, outline},
-	//}, {
-	//	Vertex{v3, v2f{0, 1}, fill, outline},
-	//	Vertex{v4, v2f{0, -1}, fill, outline},
-	//	Vertex{v5, v2f{0, 1}, fill, outline},
-	//}, {
-	//	Vertex{v6, v2f{-1, -1}, fill, outline},
-	//	Vertex{v4, v2f{0, -1}, fill, outline},
-	//	Vertex{v5, v2f{0, 1}, fill, outline},
-	//}, {
-	//	Vertex{v6, v2f{-1, -1}, fill, outline},
-	//	Vertex{v7, v2f{-1, 1}, fill, outline},
-	//	Vertex{v5, v2f{0, 1}, fill, outline},
-	//}}
+	v0 := b.Sub(nw.Add(tw))
+	v1 := b.Add(nw.Sub(tw))
+	v2 := b.Sub(nw)
+	v3 := b.Add(nw)
+	v4 := a.Sub(nw)
+	v5 := a.Add(nw)
+	v6 := a.Sub(nw.Sub(tw))
+	v7 := a.Add(nw.Add(tw))
 
 	verts := []ebiten.Vertex{
-		{v0.x, v0.y, 1, -1, fill.R, fill.G, fill.B, fill.A},
-		{v1.x, v1.y, 1, 1, fill.R, fill.G, fill.B, fill.A},
-		{v2.x, v2.y, 0, -1, fill.R, fill.G, fill.B, fill.A},
-		{v3.x, v3.y, 0, 1, fill.R, fill.G, fill.B, fill.A},
-		{v4.x, v4.y, 0, -1, fill.R, fill.G, fill.B, fill.A},
-		{v5.x, v5.y, 0, 1, fill.R, fill.G, fill.B, fill.A},
-		{v6.x, v6.y, -1, -1, fill.R, fill.G, fill.B, fill.A},
-		{v7.x, v7.y, -1, 1, fill.R, fill.G, fill.B, fill.A},
+		{float32(v0.X), float32(v0.Y), 1, -1, fill.R, fill.G, fill.B, fill.A},
+		{float32(v1.X), float32(v1.Y), 1, 1, fill.R, fill.G, fill.B, fill.A},
+		{float32(v2.X), float32(v2.Y), 0, -1, fill.R, fill.G, fill.B, fill.A},
+		{float32(v3.X), float32(v3.Y), 0, 1, fill.R, fill.G, fill.B, fill.A},
+		{float32(v4.X), float32(v4.Y), 0, -1, fill.R, fill.G, fill.B, fill.A},
+		{float32(v5.X), float32(v5.Y), 0, 1, fill.R, fill.G, fill.B, fill.A},
+		{float32(v6.X), float32(v6.Y), -1, -1, fill.R, fill.G, fill.B, fill.A},
+		{float32(v7.X), float32(v7.Y), -1, 1, fill.R, fill.G, fill.B, fill.A},
 	}
 
 	o.img.DrawTrianglesShader(verts, []uint16{
@@ -229,20 +144,14 @@ func (o *DrawOptions) DrawPolygon(count int, verts []cp.Vector, radius float64, 
 
 	inset := -math.Max(0, 1.0/DrawPointLineScale-radius)
 	for i := 0; i < count-2; i++ {
-		v0 := V2f(verts[0].Add(extrude[0].offset.Mult(inset)))
-		v1 := V2f(verts[i+1].Add(extrude[i+1].offset.Mult(inset)))
-		v2 := V2f(verts[i+2].Add(extrude[i+2].offset.Mult(inset)))
-
-		//triangleStack = append(triangleStack, Triangle{
-		//	Vertex{v0, v2f0(), fill, fill},
-		//	Vertex{v1, v2f0(), fill, fill},
-		//	Vertex{v2, v2f0(), fill, fill},
-		//})
+		v0 := verts[0].Add(extrude[0].offset.Mult(inset))
+		v1 := verts[i+1].Add(extrude[i+1].offset.Mult(inset))
+		v2 := verts[i+2].Add(extrude[i+2].offset.Mult(inset))
 
 		verts := []ebiten.Vertex{
-			{v0.x, v0.y, 0, 0, fill.R, fill.G, fill.B, fill.A},
-			{v1.x, v1.y, 0, 0, fill.R, fill.G, fill.B, fill.A},
-			{v2.x, v2.y, 0, 0, fill.R, fill.G, fill.B, fill.A},
+			{float32(v0.X), float32(v0.Y), 0, 0, fill.R, fill.G, fill.B, fill.A},
+			{float32(v1.X), float32(v1.Y), 0, 0, fill.R, fill.G, fill.B, fill.A},
+			{float32(v2.X), float32(v2.Y), 0, 0, fill.R, fill.G, fill.B, fill.A},
 		}
 
 		o.img.DrawTrianglesShader(verts, []uint16{0, 1, 2}, shader, &ebiten.DrawTrianglesShaderOptions{})
@@ -263,45 +172,24 @@ func (o *DrawOptions) DrawPolygon(count int, verts []cp.Vector, radius float64, 
 		innerA := vA.Add(offsetA.Mult(inset))
 		innerB := vB.Add(offsetB.Mult(inset))
 
-		inner0 := V2f(innerA)
-		inner1 := V2f(innerB)
-		outer0 := V2f(innerA.Add(nB.Mult(outset)))
-		outer1 := V2f(innerB.Add(nB.Mult(outset)))
-		outer2 := V2f(innerA.Add(offsetA.Mult(outset)))
-		outer3 := V2f(innerA.Add(nA.Mult(outset)))
+		inner0 := innerA
+		inner1 := innerB
+		outer0 := innerA.Add(nB.Mult(outset))
+		outer1 := innerB.Add(nB.Mult(outset))
+		outer2 := innerA.Add(offsetA.Mult(outset))
+		outer3 := innerA.Add(nA.Mult(outset))
 
-		n0 := V2f(nA)
-		n1 := V2f(nB)
-		offset0 := V2f(offsetA)
-
-		//_ = Triangle{
-		//	Vertex{inner0, v2f0(), fill, outline},
-		//	Vertex{inner1, v2f0(), fill, outline},
-		//	Vertex{outer1, n1, fill, outline},
-		//}
-		//_ = Triangle{
-		//	Vertex{inner0, v2f0(), fill, outline},
-		//	Vertex{outer0, n1, fill, outline},
-		//	Vertex{outer1, n1, fill, outline},
-		//}
-		//_ = Triangle{
-		//	Vertex{inner0, v2f0(), fill, outline},
-		//	Vertex{outer0, n1, fill, outline},
-		//	Vertex{outer2, offset0, fill, outline},
-		//}
-		//_ = Triangle{
-		//	Vertex{inner0, v2f0(), fill, outline},
-		//	Vertex{outer2, offset0, fill, outline},
-		//	Vertex{outer3, n0, fill, outline},
-		//}
+		n0 := nA
+		n1 := nB
+		offset0 := offsetA
 
 		verts := []ebiten.Vertex{
-			{inner0.x, inner0.y, 0, 0, fill.R, fill.G, fill.B, fill.A},
-			{inner1.x, inner1.y, 0, 0, fill.R, fill.G, fill.B, fill.A},
-			{outer0.x, outer0.y, n1.x, n1.y, fill.R, fill.G, fill.B, fill.A},
-			{outer1.x, outer1.y, n1.x, n1.y, fill.R, fill.G, fill.B, fill.A},
-			{outer2.x, outer2.y, offset0.x, offset0.y, fill.R, fill.G, fill.B, fill.A},
-			{outer3.x, outer3.y, n0.x, n0.y, fill.R, fill.G, fill.B, fill.A},
+			{float32(inner0.X), float32(inner0.Y), 0, 0, fill.R, fill.G, fill.B, fill.A},
+			{float32(inner1.X), float32(inner1.Y), 0, 0, fill.R, fill.G, fill.B, fill.A},
+			{float32(outer0.X), float32(outer0.Y), float32(n1.X), float32(n1.Y), fill.R, fill.G, fill.B, fill.A},
+			{float32(outer1.X), float32(outer1.Y), float32(n1.X), float32(n1.Y), fill.R, fill.G, fill.B, fill.A},
+			{float32(outer2.X), float32(outer2.Y), float32(offset0.X), float32(offset0.Y), fill.R, fill.G, fill.B, fill.A},
+			{float32(outer3.X), float32(outer3.Y), float32(n0.X), float32(n0.Y), fill.R, fill.G, fill.B, fill.A},
 		}
 
 		o.img.DrawTrianglesShader(verts, []uint16{
@@ -318,13 +206,18 @@ func (o *DrawOptions) DrawPolygon(count int, verts []cp.Vector, radius float64, 
 
 func (o *DrawOptions) DrawDot(size float64, pos cp.Vector, fill cp.FColor, _ interface{}) {
 	r := size * 0.5 / DrawPointLineScale
-	a := Vertex{v2f{float32(pos.X - r), float32(pos.Y - r)}, v2f{-1, -1}, fill, fill}
-	b := Vertex{v2f{float32(pos.X - r), float32(pos.Y + r)}, v2f{-1, 1}, fill, fill}
-	c := Vertex{v2f{float32(pos.X + r), float32(pos.Y + r)}, v2f{1, 1}, fill, fill}
-	d := Vertex{v2f{float32(pos.X + r), float32(pos.Y - r)}, v2f{1, -1}, fill, fill}
 
-	_ = Triangle{a, b, c}
-	_ = Triangle{a, c, d}
+	verts := []ebiten.Vertex{
+		{float32(pos.X - r), float32(pos.Y - r), -1, -1, fill.R, fill.G, fill.B, fill.A},
+		{float32(pos.X - r), float32(pos.Y + r), -1, 1, fill.R, fill.G, fill.B, fill.A},
+		{float32(pos.X + r), float32(pos.Y + r), 1, 1, fill.R, fill.G, fill.B, fill.A},
+		{float32(pos.X + r), float32(pos.Y - r), 1, -1, fill.R, fill.G, fill.B, fill.A},
+	}
+
+	o.img.DrawTrianglesShader(verts, []uint16{
+		0, 1, 2,
+		0, 2, 3,
+	}, shader, &ebiten.DrawTrianglesShaderOptions{})
 }
 
 func (o *DrawOptions) Flags() uint {
