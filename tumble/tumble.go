@@ -45,9 +45,9 @@ func NewGame() *Game {
 
 			typ := rand.Intn(3)
 			if typ == 0 {
-				//cpebiten.AddBox(space, pos, mass, width, height)
+				cpebiten.AddBox(space, pos, mass, width, height)
 			} else if typ == 1 {
-				//cpebiten.AddSegment(space, pos, mass, width, height)
+				cpebiten.AddSegment(space, pos, mass, width, height)
 			} else {
 				cpebiten.AddCircle(space, pos.Add(cp.Vector{0, (height - width) / 2}), mass, width/2)
 				cpebiten.AddCircle(space, pos.Add(cp.Vector{0, (width - height) / 2}), mass, width/2)
