@@ -6,7 +6,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/jakecoffman/cp"
 	"github.com/jakecoffman/cpebiten"
-	"image/color"
 	"log"
 )
 
@@ -62,15 +61,10 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.Fill(color.Black)
-
-	op := &ebiten.DrawImageOptions{}
-	op.ColorM.Scale(200.0/255.0, 200.0/255.0, 200.0/255.0, 1)
-
-	g.space.EachShape(func(shape *cp.Shape) {
-		draw := shape.UserData.(func(*ebiten.Image, *ebiten.DrawImageOptions))
-		draw(screen, op)
-	})
+	opts := cpebiten.NewDrawOptions(screen)
+	cp.DrawSpace(g.space, opts)
+	opts.Flush()
+	cpebiten.Draw(g.space, screen)
 
 	// Sum the total impulse applied to the scale from all collision pairs in the contact graph.
 	var impulseSum cp.Vector
@@ -91,9 +85,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	var count int
 	g.ball.EachArbiter(func(arb *cp.Arbiter) {
 		_, other := arb.Shapes()
-		cpebiten.DrawBB(screen, other.BB())
+		opts.DrawBB(other.BB(), cp.FColor{R: 1, A: 1})
 		count++
 	})
+	opts.Flush()
 
 	var magnitudeSum float64
 	var vectorSum cp.Vector

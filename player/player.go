@@ -145,6 +145,9 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	opts := cpebiten.NewDrawOptions(screen)
+	cp.DrawSpace(g.space, opts)
+	opts.Flush()
 	cpebiten.Draw(g.space, screen)
 }
 
@@ -154,7 +157,7 @@ func (g *Game) Layout(int, int) (int, int) {
 
 func main() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Tumble")
+	ebiten.SetWindowTitle("Player")
 	if err := ebiten.RunGame(NewGame()); err != nil {
 		log.Fatal(err)
 	}
