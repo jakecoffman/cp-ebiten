@@ -5,6 +5,7 @@ import (
 	"github.com/jakecoffman/cp"
 	"github.com/jakecoffman/cpebiten"
 	"log"
+	"math"
 )
 
 const (
@@ -41,13 +42,13 @@ func playerUpdateVelocity(body *cp.Body, gravity cp.Vector, damping, dt float64)
 	playerBody.EachArbiter(func(arb *cp.Arbiter) {
 		n := arb.Normal().Neg()
 
-		if n.Y > groundNormal.Y {
+		if n.Y < groundNormal.Y {
 			groundNormal = n
 		}
 	})
 
-	grounded = groundNormal.Y > 0
-	if groundNormal.Y < 0 {
+	grounded = groundNormal.Y < 0
+	if groundNormal.Y > 0 {
 		remainingBoost = 0
 	}
 
@@ -62,10 +63,10 @@ func playerUpdateVelocity(body *cp.Body, gravity cp.Vector, damping, dt float64)
 	// Target horizontal speed for air/ground control
 	var targetVx float64
 	if ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		targetVx += PlayerVelocity
+		targetVx -= PlayerVelocity
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.IsKeyPressed(ebiten.KeyRight) {
-		targetVx -= PlayerVelocity
+		targetVx += PlayerVelocity
 	}
 
 	// Update the surface velocity and friction
@@ -95,13 +96,13 @@ type Game struct {
 func NewGame() *Game {
 	space := cp.NewSpace()
 	space.Iterations = 10
-	space.SetGravity(cp.Vector{0, -Gravity})
+	space.SetGravity(cp.Vector{0, Gravity})
 
 	walls := []cp.Vector{
-		{-320, -240}, {-320, 240},
-		{320, -240}, {320, 240},
-		{-320, -240}, {320, -240},
-		{-320, 240}, {320, 240},
+		{0, 0}, {0, screenHeight},
+		{screenWidth, 0}, {screenWidth, screenHeight},
+		{0, 0}, {screenWidth, 0},
+		{0, screenHeight}, {screenWidth, screenHeight},
 	}
 	for i := 0; i < len(walls)-1; i += 2 {
 		shape := space.AddShape(cp.NewSegment(space.StaticBody, walls[i], walls[i+1], 0))
@@ -112,7 +113,7 @@ func NewGame() *Game {
 
 	// player
 	playerBody = space.AddBody(cp.NewBody(1, cp.INFINITY))
-	playerBody.SetPosition(cp.Vector{0, -200})
+	playerBody.SetPosition(cp.Vector{100, 200})
 	playerBody.SetVelocityUpdateFunc(playerUpdateVelocity)
 
 	playerShape = space.AddShape(cp.NewBox2(playerBody, cp.BB{-15, -27.5, 15, 27.5}, 10))
@@ -123,7 +124,7 @@ func NewGame() *Game {
 	for i := 0; i < 6; i++ {
 		for j := 0; j < 3; j++ {
 			body := space.AddBody(cp.NewBody(4, cp.INFINITY))
-			body.SetPosition(cp.Vector{float64(100 + j*60), float64(-200 + i*60)})
+			body.SetPosition(cp.Vector{float64(400 + j*60), float64(200 + i*60)})
 
 			shape := space.AddShape(cp.NewBox(body, 50, 50, 0))
 			shape.SetElasticity(0)
@@ -137,10 +138,24 @@ func NewGame() *Game {
 }
 
 func (g *Game) Update() error {
+	jumpState := ebiten.IsKeyPressed(ebiten.KeyW) || ebiten.IsKeyPressed(ebiten.KeyUp)
+
+	// If the jump key was just pressed this frame, jump!
+	if jumpState && !lastJumpState && grounded {
+		jumpV := math.Sqrt(2.0 * JumpHeight * Gravity)
+		playerBody.SetVelocityVector(playerBody.Velocity().Add(cp.Vector{0, -jumpV}))
+
+		remainingBoost = JumpBoostHeight / jumpV
+	}
+
 	cpebiten.Update(g.space)
 	g.space.Step(1.0 / 180.)
 	g.space.Step(1.0 / 180.)
 	g.space.Step(1.0 / 180.)
+
+	remainingBoost -= 1./60.
+	lastJumpState = jumpState
+
 	return nil
 }
 

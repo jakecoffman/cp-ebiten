@@ -88,12 +88,7 @@ func Update(space *cp.Space) {
 		vsync = !vsync
 	}
 
-	x, y := ebiten.CursorPosition()
-	mouse := cp.Vector{float64(x), float64(y)}
-
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		mouseJoint = handleGrab(space, mouse, mouseBody)
-	}
+	// web stuff
 	for _, id := range inpututil.JustPressedTouchIDs() {
 		x, y := ebiten.TouchPosition(id)
 		touchPos := cp.Vector{float64(x), float64(y)}
@@ -121,11 +116,21 @@ func Update(space *cp.Space) {
 			touch.body.SetPosition(newPoint)
 		}
 	}
+
+	// mouse stuff
+	x, y := ebiten.CursorPosition()
+	if x < 0 || y < 0 {
+		return // fixes weird mouse stuff on mac
+	}
+	mouse := cp.Vector{float64(x), float64(y)}
+
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		mouseJoint = handleGrab(space, mouse, mouseBody)
+	}
 	if mouseJoint != nil && inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 		space.RemoveConstraint(mouseJoint)
 		mouseJoint = nil
 	}
-
 	// calculate velocity so the object goes as fast as the mouse moved
 	newPoint := mouseBody.Position().Lerp(mouse, 0.25)
 	mouseBody.SetVelocityVector(newPoint.Sub(mouseBody.Position()).Mult(60.0))
