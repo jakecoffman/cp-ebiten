@@ -9,3 +9,7 @@ require (
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
 	golang.org/x/sys v0.0.0-20201020230747-6e5568b54d1a // indirect
 )
+
+//replace (
+//	github.com/hajimehoshi/ebiten/v2 => /Users/coffmanj/personal/ebiten
+//)
