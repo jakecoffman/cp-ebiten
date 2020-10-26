@@ -61,9 +61,6 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	opts := cpebiten.NewDrawOptions(screen)
-	cp.DrawSpace(g.space, opts)
-	opts.Flush()
 	cpebiten.Draw(g.space, screen)
 
 	// Sum the total impulse applied to the scale from all collision pairs in the contact graph.
@@ -81,6 +78,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	gravity := g.space.Gravity()
 	weight := gravity.Dot(impulseSum) / (gravity.LengthSq() * dt)
 
+	opts := cpebiten.NewDrawOptions(screen)
 	// Highlight and count the number of shapes the ball is touching.
 	var count int
 	g.ball.EachArbiter(func(arb *cp.Arbiter) {

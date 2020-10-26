@@ -133,15 +133,9 @@ func Update(space *cp.Space) {
 }
 
 func Draw(space *cp.Space, screen *ebiten.Image) {
-	//img.Fill(color.Black)
-
-	//op := &ebiten.DrawImageOptions{}
-	//op.ColorM.Scale(200.0/255.0, 200.0/255.0, 200.0/255.0, 1)
-	//
-	//space.EachShape(func(shape *cp.Shape) {
-	//	draw := shape.UserData.(func(*ebiten.Image, *ebiten.DrawImageOptions))
-	//	draw(img, op)
-	//})
+	opts := NewDrawOptions(screen)
+	cp.DrawSpace(space, opts)
+	opts.Flush()
 
 	out := fmt.Sprintf("FPS: %0.2f", ebiten.CurrentFPS())
 	if profiling {
