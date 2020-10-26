@@ -1,6 +1,7 @@
-# cpebiten
-example physics in ebiten using my chipmunk port
+# cp-ebiten
 
-## building
+Physics examples in [Ebiten](https://github.com/hajimehoshi/ebiten) using the [Go Chipmunk2D port](https://github.com/jakecoffman/cp).
 
-`GOOS=js GOARCH=wasm go build -o cpebiten.wasm github.com/jakecoffman/cpebiten`
+## building WASM
+
+`GOOS=js GOARCH=wasm go build -o tumble/tumble.wasm github.com/jakecoffman/tumble`
