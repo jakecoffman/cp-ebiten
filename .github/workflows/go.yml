@@ -23,6 +23,8 @@ jobs:
 
     - name: Get dependencies
       run: |
+        sudo apt-get update
+        sudo apt-get install libgl1-mesa-dev xorg-dev
         go get -v -t -d ./...
 
     - name: Build
