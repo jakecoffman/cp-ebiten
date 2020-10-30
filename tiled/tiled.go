@@ -16,11 +16,13 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	_ "image/png"
 )
 
 type Game struct {
-	space *cp.Space
-	map1 Map
+	Game    *cpebiten.Game
+	map1    Map
 	tileSet map[int]image.Image
 
 	world  *ebiten.Image
@@ -43,12 +45,12 @@ type Map struct {
 	} `xml:"tileset"`
 	Layer struct {
 		Text   string `xml:",chardata"`
-		ID     int `xml:"id,attr"`
+		ID     int    `xml:"id,attr"`
 		Name   string `xml:"name,attr"`
-		Width  int `xml:"width,attr"`
-		Height int `xml:"height,attr"`
+		Width  int    `xml:"width,attr"`
+		Height int    `xml:"height,attr"`
 		Data   struct {
-			Text     string `xml:",chardata"`
+			Text string `xml:",chardata"`
 		} `xml:"data"`
 	} `xml:"layer"`
 	ObjectGroups struct {
@@ -56,8 +58,8 @@ type Map struct {
 		ID     string `xml:"id,attr"`
 		Name   string `xml:"name,attr"`
 		Object []struct {
-			Text   string `xml:",chardata"`
-			ID     int `xml:"id,attr"`
+			Text   string  `xml:",chardata"`
+			ID     int     `xml:"id,attr"`
 			X      float64 `xml:"x,attr"`
 			Y      float64 `xml:"y,attr"`
 			Width  float64 `xml:"width,attr"`
@@ -67,11 +69,11 @@ type Map struct {
 }
 
 type TileSet struct {
-	Name string `xml:"name,attr"`
+	Name  string `xml:"name,attr"`
 	Image struct {
 		Source string `xml:"source,attr"`
-		Width int `xml:"width,attr"`
-		Height int `xml:"height,attr"`
+		Width  int    `xml:"width,attr"`
+		Height int    `xml:"height,attr"`
 	} `xml:"image"`
 }
 
@@ -198,17 +200,17 @@ func NewGame() *Game {
 	space := cp.NewSpace()
 
 	for _, object := range map1.ObjectGroups.Object {
-		cpebiten.AddStaticBox(space, cp.Vector{object.X+object.Width/2, object.Y+object.Height/2}, object.Width, object.Height)
+		cpebiten.AddStaticBox(space, cp.Vector{object.X + object.Width/2, object.Y + object.Height/2}, object.Width, object.Height)
 	}
 
 	worldWidth, worldHeight := map1.Width*map1.TileHeight, map1.Height*map1.TileWidth
 	world := ebiten.NewImage(worldWidth, worldHeight)
 
 	return &Game{
-		space: space,
-		map1: map1,
+		Game:    cpebiten.NewGame(space, 60),
+		map1:    map1,
 		tileSet: lookup,
-		world: world,
+		world:   world,
 		camera: Camera{
 			ViewPort:   f64.Vec2{float64(worldWidth), float64(worldHeight)},
 			Position:   f64.Vec2{-100, -70},
@@ -219,8 +221,6 @@ func NewGame() *Game {
 }
 
 func (g *Game) Update() error {
-	cpebiten.Update(g.space)
-
 	if ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyLeft) {
 		g.camera.Position[0] -= 1
 	}
@@ -253,7 +253,10 @@ func (g *Game) Update() error {
 		g.drawPhysics = !g.drawPhysics
 	}
 
-	g.space.Step(1./60.)
+	if err := g.Game.Update(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -277,10 +280,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	if g.drawPhysics {
-		g.space.EachShape(func(shape *cp.Shape) {
-			draw := shape.UserData.(func(*ebiten.Image, *ebiten.DrawImageOptions))
-			draw(g.world, op)
-		})
+		op := cpebiten.NewDrawOptions(g.world)
+		cp.DrawSpace(g.Game.Space, op)
+		op.Flush()
 	}
 
 	g.camera.Render(g.world, screen)
@@ -307,8 +309,6 @@ func (g *Game) Layout(int, int) (int, int) {
 const screenWidth, screenHeight = 800, 600
 
 func main() {
-	ebiten.SetVsyncEnabled(false)
-
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Tumble")
 	if err := ebiten.RunGame(NewGame()); err != nil {
