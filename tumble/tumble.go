@@ -13,11 +13,7 @@ const (
 	screenHeight = 480
 )
 
-type Game struct {
-	space *cp.Space
-}
-
-func NewGame() *Game {
+func NewGame() *cpebiten.Game {
 	space := cp.NewSpace()
 	space.SetGravity(cp.Vector{0, 600})
 
@@ -55,25 +51,7 @@ func NewGame() *Game {
 		}
 	}
 
-	return &Game{
-		space: space,
-	}
-}
-
-func (g *Game) Update() error {
-	cpebiten.Update(g.space)
-	g.space.Step(1.0 / 180.)
-	g.space.Step(1.0 / 180.)
-	g.space.Step(1.0 / 180.)
-	return nil
-}
-
-func (g *Game) Draw(screen *ebiten.Image) {
-	cpebiten.Draw(g.space, screen)
-}
-
-func (g *Game) Layout(int, int) (int, int) {
-	return screenWidth, screenHeight
+	return cpebiten.NewGame(space, 180)
 }
 
 func main() {

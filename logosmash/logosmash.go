@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/jakecoffman/cpebiten"
 	"image/color"
 	"log"
@@ -16,7 +18,7 @@ const (
 )
 
 type Game struct {
-	space *cp.Space
+	*cpebiten.Game
 	dot   *ebiten.Image
 }
 
@@ -64,19 +66,20 @@ func NewGame() *Game {
 	shape.SetFriction(0)
 
 	return &Game{
-		space: space,
+		Game: cpebiten.NewGame(space, 60),
 		dot:   dot,
 	}
 }
 
-func (g *Game) Update() error {
-	cpebiten.Update(g.space)
-	g.space.Step(1.0 / 60.)
-	return nil
-}
-
 func (g *Game) Draw(screen *ebiten.Image) {
-	cpebiten.Draw(g.space, screen)
+	// ebiten can't handle drawing this many triangles in one go, so drawing with image instead
+	op := &ebiten.DrawImageOptions{}
+	g.Space.EachBody(func(body *cp.Body) {
+		op.GeoM.Translate(body.Position().X, body.Position().Y)
+		screen.DrawImage(g.dot, op)
+		op.GeoM.Reset()
+	})
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("FPS: %0.2f", ebiten.CurrentFPS()))
 }
 
 func (g *Game) Layout(int, int) (int, int) {

@@ -90,7 +90,7 @@ func playerUpdateVelocity(body *cp.Body, gravity cp.Vector, damping, dt float64)
 }
 
 type Game struct {
-	space *cp.Space
+	*cpebiten.Game
 }
 
 func NewGame() *Game {
@@ -133,7 +133,7 @@ func NewGame() *Game {
 	}
 
 	return &Game{
-		space: space,
+		Game: cpebiten.NewGame(space, 180),
 	}
 }
 
@@ -148,23 +148,14 @@ func (g *Game) Update() error {
 		remainingBoost = JumpBoostHeight / jumpV
 	}
 
-	cpebiten.Update(g.space)
-	g.space.Step(1.0 / 180.)
-	g.space.Step(1.0 / 180.)
-	g.space.Step(1.0 / 180.)
+	if err := g.Game.Update(); err != nil {
+		return err
+	}
 
 	remainingBoost -= 1./60.
 	lastJumpState = jumpState
 
 	return nil
-}
-
-func (g *Game) Draw(screen *ebiten.Image) {
-	cpebiten.Draw(g.space, screen)
-}
-
-func (g *Game) Layout(int, int) (int, int) {
-	return screenWidth, screenHeight
 }
 
 func main() {

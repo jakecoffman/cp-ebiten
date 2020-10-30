@@ -10,7 +10,144 @@ import (
 	"math"
 	"os"
 	"runtime/pprof"
+	"time"
 )
+
+// Game is provided as a convenience for the examples since they all share similar logic.
+type Game struct {
+	// Space holds all of the shapes and bodies
+	Space *cp.Space
+
+	// TicksPerSecond is the fixed physics tick rate. Set it higher if objects are going
+	// through each other at the cost of higher CPU usage.
+	TicksPerSecond float64
+
+	accumulator, lastTime float64
+
+	mouseBody  *cp.Body
+	mouseJoint *cp.Constraint
+	touches    map[ebiten.TouchID]*touchInfo
+}
+
+// NewGame creates a new game.
+func NewGame(space *cp.Space, ticksPerSecond float64) *Game {
+	return &Game{
+		Space:          space,
+		TicksPerSecond: ticksPerSecond,
+		mouseBody:      cp.NewKinematicBody(),
+		touches:        map[ebiten.TouchID]*touchInfo{},
+	}
+}
+
+func (g *Game) Update() error {
+	if inpututil.IsKeyJustPressed(ebiten.KeyF10) {
+		os.Exit(0)
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+		if !profiling {
+			f, err := os.Create("profile")
+			if err != nil {
+				log.Fatal(err)
+			}
+			profile = f
+			if err := pprof.StartCPUProfile(profile); err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			pprof.StopCPUProfile()
+			profile.Close()
+		}
+		profiling = !profiling
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyV) {
+		ebiten.SetVsyncEnabled(vsync)
+		vsync = !vsync
+	}
+
+	// web stuff
+	for _, id := range inpututil.JustPressedTouchIDs() {
+		x, y := ebiten.TouchPosition(id)
+		touchPos := cp.Vector{float64(x), float64(y)}
+
+		body := cp.NewKinematicBody()
+		body.SetPosition(touchPos)
+		touch := &touchInfo{
+			id:    id,
+			body:  body,
+			joint: handleGrab(g.Space, touchPos, body),
+		}
+		g.touches[id] = touch
+	}
+	for id, touch := range g.touches {
+		if touch.joint != nil && inpututil.IsTouchJustReleased(id) {
+			g.Space.RemoveConstraint(touch.joint)
+			touch.joint = nil
+			delete(g.touches, id)
+		} else {
+			x, y := ebiten.TouchPosition(id)
+			touchPos := cp.Vector{float64(x), float64(y)}
+			// calculate velocity so the object goes as fast as the touch moved
+			newPoint := touch.body.Position().Lerp(touchPos, 0.25)
+			touch.body.SetVelocityVector(newPoint.Sub(touch.body.Position()).Mult(60.0))
+			touch.body.SetPosition(newPoint)
+		}
+	}
+
+	// mouse stuff
+	x, y := ebiten.CursorPosition()
+	if x >= 0 && y >= 0 { // fixes weird mouse stuff on mac
+		mouse := cp.Vector{float64(x), float64(y)}
+
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			g.mouseJoint = handleGrab(g.Space, mouse, g.mouseBody)
+		}
+		if g.mouseJoint != nil && inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+			g.Space.RemoveConstraint(g.mouseJoint)
+			g.mouseJoint = nil
+		}
+		// calculate velocity so the object goes as fast as the mouse moved
+		newPoint := g.mouseBody.Position().Lerp(mouse, 0.25)
+		g.mouseBody.SetVelocityVector(newPoint.Sub(g.mouseBody.Position()).Mult(60.0))
+		g.mouseBody.SetPosition(newPoint)
+	}
+
+	t := float64(time.Now().UnixNano()) / 1.e9
+	dt := t - g.lastTime
+	if dt > 0.2 {
+		dt = 0.2
+	}
+	g.lastTime = t
+
+	tick := 1. / g.TicksPerSecond
+	for g.accumulator += dt; g.accumulator > tick; g.accumulator -= tick {
+		g.Space.Step(tick)
+	}
+
+	return nil
+}
+
+func (g *Game) Draw(screen *ebiten.Image) {
+	opts := NewDrawOptions(screen)
+	cp.DrawSpace(g.Space, opts)
+	opts.Flush()
+
+	out := fmt.Sprintf("FPS: %0.2f", ebiten.CurrentFPS())
+	if profiling {
+		out += "\nprofiling"
+	}
+	ebitenutil.DebugPrint(screen, out)
+}
+
+const (
+	ScreenHeight = 480
+	ScreenWidth  = 600
+)
+
+func (g *Game) Layout(int, int) (int, int) {
+	return ScreenWidth, ScreenHeight
+}
 
 var GrabbableMaskBit uint = 1 << 31
 
@@ -52,100 +189,5 @@ type touchInfo struct {
 	joint *cp.Constraint
 }
 
-var (
-	mouseBody  = cp.NewKinematicBody()
-	mouseJoint *cp.Constraint
-	touches    = map[ebiten.TouchID]*touchInfo{}
-)
-
 var profiling, vsync bool
 var profile *os.File
-
-func Update(space *cp.Space) {
-	if inpututil.IsKeyJustPressed(ebiten.KeyF10) {
-		os.Exit(0)
-	}
-
-	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
-		if !profiling {
-			f, err := os.Create("profile")
-			if err != nil {
-				log.Fatal(err)
-			}
-			profile = f
-			if err := pprof.StartCPUProfile(profile); err != nil {
-				log.Fatal(err)
-			}
-		} else {
-			pprof.StopCPUProfile()
-			profile.Close()
-		}
-		profiling = !profiling
-	}
-
-	if inpututil.IsKeyJustPressed(ebiten.KeyV) {
-		ebiten.SetVsyncEnabled(vsync)
-		vsync = !vsync
-	}
-
-	// web stuff
-	for _, id := range inpututil.JustPressedTouchIDs() {
-		x, y := ebiten.TouchPosition(id)
-		touchPos := cp.Vector{float64(x), float64(y)}
-
-		body := cp.NewKinematicBody()
-		body.SetPosition(touchPos)
-		touch := &touchInfo{
-			id:    id,
-			body:  body,
-			joint: handleGrab(space, touchPos, body),
-		}
-		touches[id] = touch
-	}
-	for id, touch := range touches {
-		if touch.joint != nil && inpututil.IsTouchJustReleased(id) {
-			space.RemoveConstraint(touch.joint)
-			touch.joint = nil
-			delete(touches, id)
-		} else {
-			x, y := ebiten.TouchPosition(id)
-			touchPos := cp.Vector{float64(x), float64(y)}
-			// calculate velocity so the object goes as fast as the touch moved
-			newPoint := touch.body.Position().Lerp(touchPos, 0.25)
-			touch.body.SetVelocityVector(newPoint.Sub(touch.body.Position()).Mult(60.0))
-			touch.body.SetPosition(newPoint)
-		}
-	}
-
-	// mouse stuff
-	x, y := ebiten.CursorPosition()
-	if x < 0 || y < 0 {
-		return // fixes weird mouse stuff on mac
-	}
-	mouse := cp.Vector{float64(x), float64(y)}
-
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		mouseJoint = handleGrab(space, mouse, mouseBody)
-	}
-	if mouseJoint != nil && inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
-		space.RemoveConstraint(mouseJoint)
-		mouseJoint = nil
-	}
-	// calculate velocity so the object goes as fast as the mouse moved
-	newPoint := mouseBody.Position().Lerp(mouse, 0.25)
-	mouseBody.SetVelocityVector(newPoint.Sub(mouseBody.Position()).Mult(60.0))
-	mouseBody.SetPosition(newPoint)
-}
-
-func Draw(space *cp.Space, screen *ebiten.Image) {
-	opts := NewDrawOptions(screen)
-	cp.DrawSpace(space, opts)
-	opts.Flush()
-
-	out := fmt.Sprintf("FPS: %0.2f", ebiten.CurrentFPS())
-	if profiling {
-		out += "\nprofiling"
-	}
-	ebitenutil.DebugPrint(screen, out)
-}
-

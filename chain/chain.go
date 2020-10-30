@@ -34,11 +34,7 @@ func BreakableJointPostSolve(joint *cp.Constraint, space *cp.Space) {
 	}
 }
 
-type Game struct {
-	space *cp.Space
-}
-
-func NewGame() *Game {
+func NewGame() *cpebiten.Game {
 	space := cp.NewSpace()
 	space.Iterations = 30
 	space.SetGravity(cp.Vector{0, 100})
@@ -95,23 +91,7 @@ func NewGame() *Game {
 	circle := cpebiten.AddCircle(space, cp.Vector{screenWidth/2, screenHeight - 100}, 10, radius)
 	circle.Body().SetVelocity(0, -300)
 
-	return &Game{
-		space: space,
-	}
-}
-
-func (g *Game) Update() error {
-	cpebiten.Update(g.space)
-	g.space.Step(1.0 / float64(ebiten.MaxTPS()))
-	return nil
-}
-
-func (g *Game) Draw(screen *ebiten.Image) {
-	cpebiten.Draw(g.space, screen)
-}
-
-func (g *Game) Layout(int, int) (int, int) {
-	return screenWidth, screenHeight
+	return cpebiten.NewGame(space, 180)
 }
 
 func main() {

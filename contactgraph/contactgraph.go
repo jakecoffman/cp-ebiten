@@ -15,7 +15,8 @@ const (
 )
 
 type Game struct {
-	space *cp.Space
+	*cpebiten.Game
+
 	scale *cp.Body
 	ball  *cp.Body
 }
@@ -48,20 +49,14 @@ func NewGame() *Game {
 	ball := cpebiten.AddCircle(space, cp.Vector{220, 240 + radius + 5}, 10, radius).Body()
 
 	return &Game{
-		space: space,
+		Game: cpebiten.NewGame(space, 60),
 		scale: scale,
 		ball:  ball,
 	}
 }
 
-func (g *Game) Update() error {
-	cpebiten.Update(g.space)
-	g.space.Step(1.0 / float64(ebiten.MaxTPS()))
-	return nil
-}
-
 func (g *Game) Draw(screen *ebiten.Image) {
-	cpebiten.Draw(g.space, screen)
+	g.Game.Draw(screen)
 
 	// Sum the total impulse applied to the scale from all collision pairs in the contact graph.
 	var impulseSum cp.Vector
@@ -75,7 +70,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	force := impulseSum.Length() / dt
 
 	// Weight can be found similarly from the gravity vector.
-	gravity := g.space.Gravity()
+	gravity := g.Space.Gravity()
 	weight := gravity.Dot(impulseSum) / (gravity.LengthSq() * dt)
 
 	opts := cpebiten.NewDrawOptions(screen)
@@ -108,11 +103,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 Total force: %5.2f, Total weight: %5.2f. The ball is touching %d shapes
 ` + crush
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf(str, force, weight, count, crushForce), 0, 100)
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f FPS: %0.2f", ebiten.CurrentTPS(), ebiten.CurrentFPS()))
-}
-
-func (g *Game) Layout(int, int) (int, int) {
-	return screenWidth, screenHeight
 }
 
 func main() {

@@ -211,12 +211,7 @@ func (o *DrawOptions) Flags() uint {
 }
 
 func (o *DrawOptions) OutlineColor() cp.FColor {
-	return cp.FColor{
-		R: 1,
-		G: 0,
-		B: 0,
-		A: 1,
-	}
+	return cp.FColor{200.0 / 255.0, 210.0 / 255.0, 230.0 / 255.0, 1}
 }
 
 func (o *DrawOptions) ShapeColor(shape *cp.Shape, _ interface{}) cp.FColor {
@@ -271,21 +266,11 @@ func (o *DrawOptions) ShapeColor(shape *cp.Shape, _ interface{}) cp.FColor {
 }
 
 func (o *DrawOptions) ConstraintColor() cp.FColor {
-	return cp.FColor{
-		R: 0,
-		G: 1,
-		B: 0,
-		A: 1,
-	}
+	return cp.FColor{0, 0.75, 0, 1}
 }
 
 func (o *DrawOptions) CollisionPointColor() cp.FColor {
-	return cp.FColor{
-		R: 0,
-		G: 0,
-		B: 1,
-		A: 1,
-	}
+	return cp.FColor{1, 0, 0, 1}
 }
 
 func (o *DrawOptions) Data() interface{} {

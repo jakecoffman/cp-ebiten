@@ -8,16 +8,7 @@ import (
 	"math/rand"
 )
 
-const (
-	screenWidth  = 600
-	screenHeight = 480
-)
-
-type Game struct {
-	space *cp.Space
-}
-
-func NewGame() *Game {
+func NewGame() *cpebiten.Game {
 	space := cp.NewSpace()
 	space.Iterations = 10
 	space.SetGravity(cp.Vector{0, 100})
@@ -42,15 +33,13 @@ func NewGame() *Game {
 	}
 
 	for i := 0; i < 1000; i++ {
-		pos := randUnitCircle().Mult(180).Add(cp.Vector{screenWidth/2 + 10, screenHeight / 2})
+		pos := randUnitCircle().Mult(180).Add(cp.Vector{cpebiten.ScreenWidth/2 + 10, cpebiten.ScreenHeight / 2})
 		const radius = 5
 		const mass = radius * radius / 25.0
 		cpebiten.AddCircle(space, pos, mass, radius)
 	}
 
-	return &Game{
-		space: space,
-	}
+	return cpebiten.NewGame(space, 60)
 }
 
 func randUnitCircle() cp.Vector {
@@ -61,22 +50,8 @@ func randUnitCircle() cp.Vector {
 	return randUnitCircle()
 }
 
-func (g *Game) Update() error {
-	cpebiten.Update(g.space)
-	g.space.Step(1./60.)
-	return nil
-}
-
-func (g *Game) Draw(screen *ebiten.Image) {
-	cpebiten.Draw(g.space, screen)
-}
-
-func (g *Game) Layout(int, int) (int, int) {
-	return screenWidth, screenHeight
-}
-
 func main() {
-	ebiten.SetWindowSize(screenWidth, screenHeight)
+	ebiten.SetWindowSize(cpebiten.ScreenWidth, cpebiten.ScreenHeight)
 	ebiten.SetWindowTitle("Benchmark")
 	if err := ebiten.RunGame(NewGame()); err != nil {
 		log.Fatal(err)
