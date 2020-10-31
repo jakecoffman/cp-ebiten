@@ -22,11 +22,16 @@ type Game struct {
 	// through each other at the cost of higher CPU usage.
 	TicksPerSecond float64
 
-	accumulator, lastTime float64
+	// Accumulator shows the remaining time from the physics tick.
+	Accumulator float64
+	lastTime float64
 
 	mouseBody  *cp.Body
 	mouseJoint *cp.Constraint
 	touches    map[ebiten.TouchID]*touchInfo
+
+	// FixedUpdate is an optional callback that is called when a fixed update occurs.
+	FixedUpdate func()
 }
 
 // NewGame creates a new game.
@@ -113,22 +118,38 @@ func (g *Game) Update() error {
 		g.mouseBody.SetPosition(newPoint)
 	}
 
-	t := float64(time.Now().UnixNano()) / 1.e9
-	dt := t - g.lastTime
-	if dt > 0.2 {
-		dt = 0.2
-	}
-	g.lastTime = t
-
-	tick := 1. / g.TicksPerSecond
-	for g.accumulator += dt; g.accumulator > tick; g.accumulator -= tick {
-		g.Space.Step(tick)
-	}
+	g.physicsTick()
 
 	return nil
 }
 
+func (g *Game) physicsTick() {
+	newTime := float64(time.Now().UnixNano()) / 1.e9
+	frameTime := newTime - g.lastTime
+	const maxUpdate = .25
+	if frameTime > maxUpdate {
+		frameTime = maxUpdate
+	}
+	g.lastTime = newTime
+	g.Accumulator += frameTime
+
+	//if !do {
+	//	return
+	//}
+
+	dt := 1. / g.TicksPerSecond
+	for g.Accumulator >= dt {
+		if g.FixedUpdate != nil {
+			g.FixedUpdate()
+		}
+		g.Space.Step(dt)
+		g.Accumulator -= dt
+	}
+}
+
 func (g *Game) Draw(screen *ebiten.Image) {
+	g.physicsTick()
+
 	opts := NewDrawOptions(screen)
 	cp.DrawSpace(g.Space, opts)
 	opts.Flush()
