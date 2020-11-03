@@ -118,12 +118,12 @@ func (g *Game) Update() error {
 		g.mouseBody.SetPosition(newPoint)
 	}
 
-	g.physicsTick()
+	g.PhysicsTick()
 
 	return nil
 }
 
-func (g *Game) physicsTick() {
+func (g *Game) PhysicsTick() {
 	newTime := float64(time.Now().UnixNano()) / 1.e9
 	frameTime := newTime - g.lastTime
 	const maxUpdate = .25
@@ -148,7 +148,7 @@ func (g *Game) physicsTick() {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	g.physicsTick()
+	g.PhysicsTick()
 
 	opts := NewDrawOptions(screen)
 	cp.DrawSpace(g.Space, opts)
