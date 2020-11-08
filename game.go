@@ -41,6 +41,7 @@ func NewGame(space *cp.Space, ticksPerSecond float64) *Game {
 		TicksPerSecond: ticksPerSecond,
 		mouseBody:      cp.NewKinematicBody(),
 		touches:        map[ebiten.TouchID]*touchInfo{},
+		FixedUpdate: func() {},
 	}
 }
 
@@ -139,9 +140,7 @@ func (g *Game) PhysicsTick() {
 
 	dt := 1. / g.TicksPerSecond
 	for g.Accumulator >= dt {
-		if g.FixedUpdate != nil {
-			g.FixedUpdate()
-		}
+		g.FixedUpdate()
 		g.Space.Step(dt)
 		g.Accumulator -= dt
 	}
