@@ -1,5 +1,3 @@
-// +build js
-
 package cpebiten
 
 import "github.com/hajimehoshi/ebiten/v2"
@@ -14,7 +12,7 @@ func aa_step(t1, t2, f float) float {
 func Fragment(position vec4, aa vec2, color vec4) vec4 {
 	l := length(aa)
 
-	fw := .1
+	fw := length(fwidth(aa))
 
 	// Outline width threshold.
 	ow := 1.0 - fw

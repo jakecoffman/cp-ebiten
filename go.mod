@@ -3,11 +3,13 @@ module github.com/jakecoffman/cpebiten
 go 1.15
 
 require (
-	github.com/hajimehoshi/ebiten/v2 v2.1.0-alpha.0.20201021023308-d6eac8c5bff3
+	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20201108214237-06ea97f0c265 // indirect
+	github.com/hajimehoshi/ebiten/v2 v2.1.0-alpha.4.0.20201215174106-e856b236f30e
 	github.com/jakecoffman/cp v1.0.0
-	golang.org/x/exp v0.0.0-20201008143054-e3b2a7f2fdc7 // indirect
-	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
-	golang.org/x/sys v0.0.0-20201020230747-6e5568b54d1a // indirect
+	golang.org/x/exp v0.0.0-20201215153530-b5a6e247da10 // indirect
+	golang.org/x/image v0.0.0-20201208152932-35266b937fa6
+	golang.org/x/mobile v0.0.0-20201208152944-da85bec010a2 // indirect
+	golang.org/x/sys v0.0.0-20201214210602-f9fddec55a1e // indirect
 )
 
 //replace (
