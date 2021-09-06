@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
   <meta name="twitter:card" content="player" />
   <meta name="twitter:site" content="@nill" />
@@ -10,8 +11,32 @@
   <meta name="twitter:player" content="https://jakecoffman.com/cp-ebiten/" />
   <meta name="twitter:player:width" content="600" />
   <meta name="twitter:player:height" content="480" />
+  <title>Chipmunk2D Demo</title>
+
+  <style>
+      a {
+        color: lightskyblue;
+      }
+      a:visited {
+          color: violet;
+      }
+      footer {
+        position: fixed;
+        left: 1rem;
+        bottom: 1rem;
+        color: lightblue;
+
+        display: flex;
+        gap: 2rem;
+    }
+  </style>
 </head>
 <body>
+<footer>
+  <span>Other demos:</span>
+  <a href="tumble/">Tumble</a>
+  <a href="chain/">Chain</a>
+</footer>
 <script src="wasm_exec.js"></script>
 <script>
   // Polyfill
@@ -28,3 +53,4 @@
   });
 </script>
 </body>
+</html>
