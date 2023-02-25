@@ -9,7 +9,7 @@ require (
 	golang.org/x/exp v0.0.0-20201215153530-b5a6e247da10 // indirect
 	golang.org/x/image v0.0.0-20201208152932-35266b937fa6
 	golang.org/x/mobile v0.0.0-20201208152944-da85bec010a2 // indirect
-	golang.org/x/sys v0.0.0-20201214210602-f9fddec55a1e // indirect
+	golang.org/x/sys v0.1.0 // indirect
 )
 
 //replace (
