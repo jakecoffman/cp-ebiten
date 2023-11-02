@@ -7,7 +7,7 @@ require (
 	github.com/hajimehoshi/ebiten/v2 v2.1.0-alpha.4.0.20201215174106-e856b236f30e
 	github.com/jakecoffman/cp v1.0.0
 	golang.org/x/exp v0.0.0-20201215153530-b5a6e247da10 // indirect
-	golang.org/x/image v0.5.0
+	golang.org/x/image v0.10.0
 	golang.org/x/mobile v0.0.0-20201208152944-da85bec010a2 // indirect
 )
 
