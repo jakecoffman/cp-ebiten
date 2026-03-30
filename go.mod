@@ -1,11 +1,11 @@
 module github.com/jakecoffman/cpebiten
 
-go 1.22.0
+go 1.25.0
 
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.8.1
 	github.com/jakecoffman/cp/v2 v2.1.0
-	golang.org/x/image v0.21.0
+	golang.org/x/image v0.38.0
 )
 
 require (
